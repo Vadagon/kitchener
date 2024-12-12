@@ -1,43 +1,46 @@
 'use strict';
 
-// Content script file will run in the context of web page.
-// With content script you can manipulate the web pages using
-// Document Object Model (DOM).
-// You can also pass information to the parent extension.
-
-// We execute this script by making an entry in manifest.json file
-// under `content_scripts` property
-
-// For more information on Content Scripts,
-// See https://developer.chrome.com/extensions/content_scripts
-
-// Log `title` of current active web page
 const pageTitle = document.head.getElementsByTagName('title')[0].innerHTML;
 console.log(
   `Page title is: '${pageTitle}' - evaluated by Chrome extension's 'contentScript.js' file`
 );
 
-// Communicate with background file by sending a message
-chrome.runtime.sendMessage(
-  {
-    type: 'GREETINGS',
-    payload: {
-      message: 'Hello, my name is Con. I am from ContentScript.',
-    },
-  },
-  (response) => {
-    console.log(response.message);
-  }
-);
+// Initialize a ticker every 0.3 seconds
+setInterval(() => {
+  // Iterate over every stacksContainer > div
+  const stacksContainers = document.querySelectorAll('.stacksContainer > div > div');
+  stacksContainers.forEach(container => {
+    // Initialize sum for the current container
+    let sum = 0;
 
-// Listen for message
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.type === 'COUNT') {
-    console.log(`Current count is ${request.payload.count}`);
-  }
+    // Iterate over each .kanbanCardContainer inside the container
+    const kanbanCardContainers = container.querySelectorAll('.kanbanCardContainer');
+    kanbanCardContainers.forEach(card => {
+      // Look for a div with title='Quantity'
+      const quantityDiv = card.querySelector('div[title="Quantity"]');
+      if (quantityDiv) {
+        // Get the number from the next block
+        const nextBlock = quantityDiv.nextElementSibling;
+        if (nextBlock) {
+          const number = parseFloat(nextBlock.textContent);
+          if (!isNaN(number)) {
+            sum += number;
+          }
+        }
+      }
 
-  // Send an empty response
-  // See https://github.com/mozilla/webextension-polyfill/issues/130#issuecomment-531531890
-  sendResponse({});
-  return true;
-});
+      // Look for divs with title='Order ID' and remove their parent
+      const orderIdDiv = card.querySelector('div[role="heading"]');
+      if (orderIdDiv) {
+        orderIdDiv.style.display = 'none';
+      }
+    });
+
+    // Change content of .ml1-and-quarter to the sum
+    const elements = container.querySelectorAll('.ml1-and-quarter');
+    elements.forEach(element => {
+      element.textContent = sum.toString();
+    });
+  });
+}, 300);
+
