@@ -32,7 +32,8 @@ setInterval(() => {
       // Look for divs with title='Order ID' and remove their parent
       const orderIdDiv = card.querySelector('div[role="heading"]');
       if (orderIdDiv) {
-        orderIdDiv.style.display = 'none';
+        orderIdDiv.style.height = '0';
+        orderIdDiv.style.overflow = 'hidden';
       }
     });
 
