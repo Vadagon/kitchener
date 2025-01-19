@@ -7,6 +7,18 @@ console.log(
 
 // Initialize a ticker every 0.3 seconds
 setInterval(() => {
+  // Check for H2 element with text 'Hot Order Items' or 'Cold Order Items'
+  const h2Elements = document.querySelectorAll('h2');
+  let found = false;
+  h2Elements.forEach(h2 => {
+    if (h2.textContent.includes('Hot Order Items') || h2.textContent.includes('Cold Order Items')) {
+      found = true;
+    }
+  });
+
+  if (!found) {
+    return;
+  }
   // Iterate over every stacksContainer > div
   const stacksContainers = document.querySelectorAll('.stacksContainer > div > div');
   stacksContainers.forEach(container => {
