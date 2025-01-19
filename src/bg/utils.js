@@ -21,9 +21,7 @@ export async function generateCodeChallenge(verifier) {
 
 export function storeError(error, erro1) {
     console.error(error, erro1);
-    chrome.storage.local.set({ error: error + erro1.toString() }, () => {
-        console.log('All records stored locally by Order ID');
-    });
+    chrome.storage.local.set({ error: error + erro1.toString() });
 }
 export async function playSound() {
     const offscreenUrl = chrome.runtime.getURL('audio.html');

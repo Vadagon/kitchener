@@ -16,8 +16,6 @@ function main() {
       } else {
         checkForChangesAndMakeSound(tokenData);
       }
-    } else {
-      authenticateWithAirtable();
     }
   });
 }
