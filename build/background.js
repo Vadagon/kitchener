@@ -3765,6 +3765,128 @@ module.exports = Airtable;
 
 /***/ }),
 
+/***/ "./src/bg/api.js":
+/*!***********************!*\
+  !*** ./src/bg/api.js ***!
+  \***********************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   getAllRows: () => (/* binding */ getAllRows),
+/* harmony export */   getBases: () => (/* binding */ getBases)
+/* harmony export */ });
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utils */ "./src/bg/utils.js");
+
+
+async function getAllRows(base) {
+  let allRecords = [];
+  await new Promise((resolve, reject) => {
+    const requestedLastDate = new Date();
+    requestedLastDate.setDate(requestedLastDate.getDate() - 500);
+
+    base('Orders').select({
+      view: "Grid view",
+      fields: ['Order Updated Post Kitchen Notification'],
+      maxRecords: 200
+    }).eachPage((records, fetchNextPage) => {
+      allRecords = allRecords.concat(records);
+      fetchNextPage();
+    }, (err) => {
+      if (err) {
+        (0,_utils__WEBPACK_IMPORTED_MODULE_0__.storeError)(err);
+        reject(err);
+      } else {
+        resolve();
+      }
+    });
+  });
+  const filteredRecords = (0,_utils__WEBPACK_IMPORTED_MODULE_0__.filterRecords)(allRecords);
+  return filteredRecords;
+}
+
+
+async function getBases(accessToken) {
+  try {
+    const response = await fetch('https://api.airtable.com/v0/meta/bases', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (data.error) {
+      (0,_utils__WEBPACK_IMPORTED_MODULE_0__.storeError)("Error fetching bases:", data.error);
+    } else {
+      console.log("Bases:", data.bases);
+      // Store the bases data along with the token data
+      chrome.storage.local.get("airtableTokenData", (result) => {
+        const updatedData = {
+          ...result.airtableTokenData,
+          bases: data.bases
+        };
+        chrome.storage.local.set({ airtableTokenData: updatedData }, () => {
+          console.log("Bases data stored successfully");
+        });
+      });
+    }
+  } catch (error) {
+    (0,_utils__WEBPACK_IMPORTED_MODULE_0__.storeError)("Failed to fetch bases:", error);
+  }
+}
+
+/***/ }),
+
+/***/ "./src/bg/functions.js":
+/*!*****************************!*\
+  !*** ./src/bg/functions.js ***!
+  \*****************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   checkForChangesAndMakeSound: () => (/* binding */ checkForChangesAndMakeSound)
+/* harmony export */ });
+/* harmony import */ var airtable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! airtable */ "./node_modules/airtable/lib/airtable.umd.js");
+/* harmony import */ var airtable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(airtable__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./utils */ "./src/bg/utils.js");
+/* harmony import */ var _api__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./api */ "./src/bg/api.js");
+
+
+
+
+function checkForChangesAndMakeSound(tokenData) {
+    var base = new (airtable__WEBPACK_IMPORTED_MODULE_0___default())({ apiKey: tokenData.access_token }).base(tokenData.bases[0].id);
+    (0,_api__WEBPACK_IMPORTED_MODULE_2__.getAllRows)(base).then(allRecords => {
+        const recordsById = allRecords.reduce((acc, record) => {
+            acc[record.id] = { ...record.fields, id: record.id };
+            return acc;
+        }, {});
+        chrome.storage.local.get('recordsById', (result) => {
+            const oldRecordsById = result.recordsById || {};
+            const newRecords = Object.keys(recordsById).filter(id => !oldRecordsById[id]);
+            console.log(
+                'oldRecordsById: ' + Object.keys(oldRecordsById).length, oldRecordsById,
+                'recordsById: ' + Object.keys(recordsById).length, recordsById,
+                'newRecords: ' + Object.keys(newRecords).length, newRecords);
+            if (newRecords.length > 0 && Object.keys(oldRecordsById).length > 0) {
+                console.log('New records added:', newRecords);
+                (0,_utils__WEBPACK_IMPORTED_MODULE_1__.playSound)();
+            }
+            chrome.storage.local.set({ recordsById: recordsById }, () => {
+                console.log('All records stored locally by Order ID');
+            });
+        });
+    }).catch(err => {
+        (0,_utils__WEBPACK_IMPORTED_MODULE_1__.storeError)('Error retrieving records: ' + err);
+    });
+}
+
+/***/ }),
+
 /***/ "./src/bg/oauth.js":
 /*!*************************!*\
   !*** ./src/bg/oauth.js ***!
@@ -3776,10 +3898,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   authenticateWithAirtable: () => (/* binding */ authenticateWithAirtable),
 /* harmony export */   exchangeCodeForToken: () => (/* binding */ exchangeCodeForToken),
-/* harmony export */   getBases: () => (/* binding */ getBases),
+/* harmony export */   isTokenDataOk: () => (/* binding */ isTokenDataOk),
 /* harmony export */   refreshAccessToken: () => (/* binding */ refreshAccessToken)
 /* harmony export */ });
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utils */ "./src/bg/utils.js");
+/* harmony import */ var airtable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! airtable */ "./node_modules/airtable/lib/airtable.umd.js");
+/* harmony import */ var airtable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(airtable__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./utils */ "./src/bg/utils.js");
+/* harmony import */ var _api__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./api */ "./src/bg/api.js");
+
+
 
 
 // Constants
@@ -3787,13 +3914,13 @@ const CLIENT_ID = "b91a2cb4-bf74-4614-bf84-35ea2337b69d";
 const REDIRECT_URI = chrome.identity.getRedirectURL("oauth");
 const AUTH_BASE_URL = "https://airtable.com/oauth2/v1/authorize";
 const TOKEN_URL = "https://airtable.com/oauth2/v1/token";
-
+const TOKEN_REFRESH_URL = 'https://api.airtable.com/oauth2/v1/token';
 // OAuth Flow
 async function authenticateWithAirtable() {
   try {
-    const state = (0,_utils__WEBPACK_IMPORTED_MODULE_0__.generateRandomString)();
-    const codeVerifier = (0,_utils__WEBPACK_IMPORTED_MODULE_0__.generateRandomString)();
-    const codeChallenge = await (0,_utils__WEBPACK_IMPORTED_MODULE_0__.generateCodeChallenge)(codeVerifier);
+    const state = (0,_utils__WEBPACK_IMPORTED_MODULE_1__.generateRandomString)();
+    const codeVerifier = (0,_utils__WEBPACK_IMPORTED_MODULE_1__.generateRandomString)();
+    const codeChallenge = await (0,_utils__WEBPACK_IMPORTED_MODULE_1__.generateCodeChallenge)(codeVerifier);
     const scopes = ["data.records:read", "user.email:read", "schema.bases:read", "webhook:manage"].join(" ");
 
     const authUrl = `${AUTH_BASE_URL}?` +
@@ -3809,7 +3936,7 @@ async function authenticateWithAirtable() {
 
     chrome.identity.launchWebAuthFlow({ url: authUrl, interactive: true }, async (redirectedUrl) => {
       if (chrome.runtime.lastError) {
-        console.error("OAuth Error:", chrome.runtime.lastError.message);
+        (0,_utils__WEBPACK_IMPORTED_MODULE_1__.storeError)("OAuth Error:", chrome.runtime.lastError.message);
         return;
       }
 
@@ -3818,7 +3945,7 @@ async function authenticateWithAirtable() {
       const returnedState = urlParams.get("state");
 
       if (returnedState !== state) {
-        console.error("State mismatch. Possible CSRF attack!");
+        (0,_utils__WEBPACK_IMPORTED_MODULE_1__.storeError)("State mismatch. Possible CSRF attack!");
         return;
       }
 
@@ -3826,7 +3953,7 @@ async function authenticateWithAirtable() {
       await exchangeCodeForToken(authCode, codeVerifier);
     });
   } catch (error) {
-    console.error("Authentication Error:", error);
+    (0,_utils__WEBPACK_IMPORTED_MODULE_1__.storeError)("Authentication Error:", error);
   }
 }
 
@@ -3847,44 +3974,45 @@ async function exchangeCodeForToken(authCode, codeVerifier) {
     const data = await response.json();
 
     if (data.error) {
-      console.error("Token Exchange Error:", data.error);
+      (0,_utils__WEBPACK_IMPORTED_MODULE_1__.storeError)("Token Exchange Error:", data.error);
     } else {
       console.log(data);
       console.log("Access Token:", data.access_token);
       storeToken(data);
     }
   } catch (error) {
-    console.error("Token Exchange Failed:", error);
+    (0,_utils__WEBPACK_IMPORTED_MODULE_1__.storeError)("Token Exchange Failed:", error);
   }
 }
 
 function storeToken(data, refreshed = false) {
   var _tokenData = { ...data, refreshedAt: new Date().toISOString() };
-  if(!refreshed){
+  if (!refreshed) {
     _tokenData.retrievedAt = new Date().toISOString();
   }
   chrome.storage.local.set({ airtableTokenData: _tokenData }, () => {
     console.log("Token data stored successfully");
-    getBases(data.access_token);
+    (0,_api__WEBPACK_IMPORTED_MODULE_2__.getBases)(data.access_token);
   });
 }
 
 function refreshAccessToken(refreshToken) {
   return new Promise(async (resolve, reject) => {
     try {
-      const response = await fetch('https://api.airtable.com/v0/oauth/token', {
+      const response = await fetch(TOKEN_REFRESH_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           grant_type: 'refresh_token',
+          client_id: CLIENT_ID,
           refresh_token: refreshToken
         })
       });
       const data = await response.json();
       if (data.error) {
-        console.error("Token Refresh Error:", data.error);
+        (0,_utils__WEBPACK_IMPORTED_MODULE_1__.storeError)("Token Refresh Error:", data.error);
         reject(data.error);
       } else {
         console.log("New Access Token:", data.access_token);
@@ -3892,40 +4020,29 @@ function refreshAccessToken(refreshToken) {
         resolve(data);
       }
     } catch (error) {
-      console.error("Token Refresh Failed:", error);
+      (0,_utils__WEBPACK_IMPORTED_MODULE_1__.storeError)("Token Refresh Failed:", error);
       reject(error);
     }
   });
 }
 
-async function getBases(accessToken) {
-  try {
-    const response = await fetch('https://api.airtable.com/v0/meta/bases', {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+
+
+function isTokenDataOk(tokenData) {
+  const now = new Date();
+  const refreshExpiresIn = (tokenData.refresh_expires_in && tokenData.retrievedAt) ? new Date(new Date(tokenData.retrievedAt).getTime() + tokenData.refresh_expires_in * 1000) : null;
+  const expiresIn = (tokenData.expires_in && tokenData.refreshedAt) ? new Date(new Date(tokenData.refreshedAt).getTime() + tokenData.expires_in * 1000) : null;
+
+  if (!refreshExpiresIn || now >= refreshExpiresIn) {
+    console.log("Refresh token expired, re-authenticating...");
+    authenticateWithAirtable();
+  } else if (!expiresIn || now >= expiresIn) {
+    console.log("Access token expired, renewing token...");
+    refreshAccessToken(tokenData.refresh_token).catch(() => {
+      // authenticateWithAirtable();
     });
-
-    const data = await response.json();
-
-    if (data.error) {
-      console.error("Error fetching bases:", data.error);
-    } else {
-      console.log("Bases:", data.bases);
-      // Store the bases data along with the token data
-      chrome.storage.local.get("airtableTokenData", (result) => {
-        const updatedData = {
-          ...result.airtableTokenData,
-          bases: data.bases
-        };
-        chrome.storage.local.set({ airtableTokenData: updatedData }, () => {
-          console.log("Bases data stored successfully");
-        });
-      });
-    }
-  } catch (error) {
-    console.error("Failed to fetch bases:", error);
   }
+  return true;
 }
 
 /***/ }),
@@ -3939,6 +4056,7 @@ async function getBases(accessToken) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   filterRecords: () => (/* binding */ filterRecords),
 /* harmony export */   generateCodeChallenge: () => (/* binding */ generateCodeChallenge),
 /* harmony export */   generateRandomString: () => (/* binding */ generateRandomString),
 /* harmony export */   playSound: () => (/* binding */ playSound),
@@ -3965,9 +4083,9 @@ async function generateCodeChallenge(verifier) {
         .replace(/=+$/, "");
 }
 
-function storeError(error) {
-    console.error(error);
-    chrome.storage.local.set({ error }, () => {
+function storeError(error, erro1) {
+    console.error(error, erro1);
+    chrome.storage.local.set({ error: error + erro1.toString() }, () => {
         console.log('All records stored locally by Order ID');
     });
 }
@@ -3983,6 +4101,12 @@ async function playSound() {
         justification: 'notification',
     });
 }
+
+
+function filterRecords(allRecords) {
+    return allRecords.filter(record => !!record.get('Order Updated Post Kitchen Notification'));
+}
+
 
 /***/ })
 
@@ -4075,114 +4199,57 @@ var __webpack_exports__ = {};
   \***************************/
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _bg_oauth__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./bg/oauth */ "./src/bg/oauth.js");
-/* harmony import */ var airtable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! airtable */ "./node_modules/airtable/lib/airtable.umd.js");
-/* harmony import */ var airtable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(airtable__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _bg_utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./bg/utils */ "./src/bg/utils.js");
+/* harmony import */ var _bg_utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./bg/utils */ "./src/bg/utils.js");
+/* harmony import */ var _bg_functions__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./bg/functions */ "./src/bg/functions.js");
 
 
 
 
 
 
-// Configure Airtable
-var base;
 
-// // Function to get rows with 'order updated' not empty
-// function getRowsWithOrderUpdated() {
-//   base('WIP Odyssey Database 2.0').select({
-//     filterByFormula: "NOT({order updated} = '')"
-//   }).eachPage((records, fetchNextPage) => {
-//     records.forEach(record => {
-//       console.log('Retrieved', record.get('order updated'));
-//     });
-//     fetchNextPage();
-//   }, (err) => {
-//     if (err) { storeError(err); return; }
-//   });
-// }
-// Function to get all rows from the selected table
-async function getAllRows() {
-  let allRecords = [];
-  await new Promise((resolve, reject) => {
-    const requestedLastDate = new Date();
-    requestedLastDate.setDate(requestedLastDate.getDate() - 500);
-
-    base('Orders').select({
-      view: "Grid view",
-      fields: ['Order Updated Post Kitchen Notification', 'fldujBflajusBDTCE'],
-      maxRecords: 200
-    }).eachPage((records, fetchNextPage) => {
-      allRecords = allRecords.concat(records);
-      fetchNextPage();
-    }, (err) => {
-      if (err) {
-        (0,_bg_utils__WEBPACK_IMPORTED_MODULE_2__.storeError)(err);
-        reject(err);
-      } else {
-        resolve();
-      }
-    });
-  });
-  const filteredRecords = allRecords.filter(record => !!record.get('Order Updated Post Kitchen Notification'));
-  return filteredRecords;
-}
-
-// Event Listener
-chrome.action.onClicked.addListener(() => {
+function main() {
   chrome.storage.local.get("airtableTokenData", (result) => {
     if (result.airtableTokenData) {
       const tokenData = result.airtableTokenData;
-      const now = new Date();
-      const refreshExpiresIn = (tokenData.refresh_expires_in && tokenData.retrievedAt) ? new Date(new Date(tokenData.retrievedAt).getTime() + tokenData.refresh_expires_in * 1000) : null;
-      const expiresIn = (tokenData.expires_in && tokenData.refreshedAt) ? new Date(new Date(tokenData.refreshedAt).getTime() + tokenData.expires_in * 1000) : null;
-      if (!refreshExpiresIn || now >= refreshExpiresIn) {
-        console.log("Refresh token expired, re-authenticating...");
-        (0,_bg_oauth__WEBPACK_IMPORTED_MODULE_0__.authenticateWithAirtable)();
-      } else if (!expiresIn || now >= expiresIn) {
-        console.log("Access token expired, renewing token...");
-        // Add your token renewal logic here
-        (0,_bg_oauth__WEBPACK_IMPORTED_MODULE_0__.refreshAccessToken)(tokenData.refresh_token).catch(() => {
-          (0,_bg_oauth__WEBPACK_IMPORTED_MODULE_0__.authenticateWithAirtable)();
-        });
+      var tokenIsOk = (0,_bg_oauth__WEBPACK_IMPORTED_MODULE_0__.isTokenDataOk)(tokenData);
+      if (!tokenIsOk) return;
+      if (tokenData.bases.length === 0) {
+        (0,_bg_utils__WEBPACK_IMPORTED_MODULE_1__.storeError)("No bases found.");
       } else {
-        console.log("Token already exists:", tokenData);
-        if (tokenData.bases.length === 0) {
-          (0,_bg_utils__WEBPACK_IMPORTED_MODULE_2__.storeError)("No bases found.");
-        } else {
-          base = new (airtable__WEBPACK_IMPORTED_MODULE_1___default())({ apiKey: tokenData.access_token }).base(tokenData.bases[0].id);
-          // getRowsWithOrderUpdated();
-          // getAllRows(tokenData.bases[0].id);
-          getAllRows(tokenData.bases[0].id).then(allRecords => {
-            const recordsById = allRecords.reduce((acc, record) => {
-              acc[record.id] = { ...record.fields, id: record.id };
-              return acc;
-            }, {});
-            chrome.storage.local.get('recordsById', (result) => {
-              const oldRecordsById = result.recordsById || {};
-              const newRecords = Object.keys(recordsById).filter(id => !oldRecordsById[id]);
-              console.log(
-                'oldRecordsById: ' + Object.keys(oldRecordsById).length, oldRecordsById,
-                'recordsById: ' + Object.keys(recordsById).length, recordsById,
-                'newRecords: ' + Object.keys(newRecords).length, newRecords);
-              if (newRecords.length > 0 && Object.keys(oldRecordsById).length > 0) {
-                console.log('New records added:', newRecords);
-                (0,_bg_utils__WEBPACK_IMPORTED_MODULE_2__.playSound)();
-              }
-              chrome.storage.local.set({ recordsById: recordsById }, () => {
-                console.log('All records stored locally by Order ID');
-              });
-            });
-          }).catch(err => {
-            (0,_bg_utils__WEBPACK_IMPORTED_MODULE_2__.storeError)('Error retrieving records: ' + err);
-          });
-        }
+        (0,_bg_functions__WEBPACK_IMPORTED_MODULE_2__.checkForChangesAndMakeSound)(tokenData);
       }
     } else {
       (0,_bg_oauth__WEBPACK_IMPORTED_MODULE_0__.authenticateWithAirtable)();
     }
   });
+}
+
+
+
+chrome.alarms.create("checkAirtableChanges", { periodInMinutes: 0.1 });
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === "checkAirtableChanges") {
+    main();
+  }
 });
 
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'authenticate') {
+    (0,_bg_oauth__WEBPACK_IMPORTED_MODULE_0__.authenticateWithAirtable)()
+      .then(() => sendResponse({ success: true }))
+      .catch(error => sendResponse({ error: error.message }));
+  } else if (request.action === 'getBasesList') {
+    chrome.storage.local.get("airtableTokenData", (result) => {
+      if (result.airtableTokenData) {
+        sendResponse(result.airtableTokenData);
+      }
+    });
+  }
+  return true; // Will respond asynchronously.
+});
 })();
 
 /******/ })()

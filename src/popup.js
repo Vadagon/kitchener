@@ -1,112 +1,68 @@
-'use strict';
-
 import './popup.css';
 
-(function () {
-  // We will make use of Storage API to get and store `count` value
-  // More information on Storage API can we found at
-  // https://developer.chrome.com/extensions/storage
+document.addEventListener('DOMContentLoaded', () => {
+  const authenticateBtn = document.getElementById('authenticateBtn');
+  const selectBox = document.getElementById('selectBox');
+  const appDiv = document.querySelector('.app');
 
-  // To get storage access, we have to mention it in `permissions` property of manifest.json file
-  // More information on Permissions can we found at
-  // https://developer.chrome.com/extensions/declare_permissions
-  const counterStorage = {
-    get: (cb) => {
-      chrome.storage.sync.get(['count'], (result) => {
-        cb(result.count);
-      });
-    },
-    set: (value, cb) => {
-      chrome.storage.sync.set(
-        {
-          count: value,
-        },
-        () => {
-          cb();
-        }
-      );
-    },
-  };
-
-  function setupCounter(initialValue = 0) {
-    document.getElementById('counter').innerHTML = initialValue;
-
-    document.getElementById('incrementBtn').addEventListener('click', () => {
-      updateCounter({
-        type: 'INCREMENT',
-      });
-    });
-
-    document.getElementById('decrementBtn').addEventListener('click', () => {
-      updateCounter({
-        type: 'DECREMENT',
-      });
-    });
-  }
-
-  function updateCounter({ type }) {
-    counterStorage.get((count) => {
-      let newCount;
-
-      if (type === 'INCREMENT') {
-        newCount = count + 1;
-      } else if (type === 'DECREMENT') {
-        newCount = count - 1;
+  authenticateBtn.addEventListener('click', () => {
+    chrome.runtime.sendMessage({ action: 'authenticate' }, (response) => {
+      if (response.error) {
+        console.error('Authentication Error:', response.error);
       } else {
-        newCount = count;
-      }
-
-      counterStorage.set(newCount, () => {
-        document.getElementById('counter').innerHTML = newCount;
-
-        // Communicate with content script of
-        // active tab by sending a message
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-          const tab = tabs[0];
-
-          chrome.tabs.sendMessage(
-            tab.id,
-            {
-              type: 'COUNT',
-              payload: {
-                count: newCount,
-              },
-            },
-            (response) => {
-              console.log('Current count value passed to contentScript file');
-            }
-          );
-        });
-      });
-    });
-  }
-
-  function restoreCounter() {
-    // Restore count value
-    counterStorage.get((count) => {
-      if (typeof count === 'undefined') {
-        // Set counter value as 0
-        counterStorage.set(0, () => {
-          setupCounter(0);
-        });
-      } else {
-        setupCounter(count);
+        console.log('Authenticated successfully');
       }
     });
-  }
+  });
 
-  document.addEventListener('DOMContentLoaded', restoreCounter);
+  // selectBox.addEventListener('change', () => {
+  //   if (selectBox.checked) {
+  //     getBasesList();
+  //   }
+  // });
 
-  // Communicate with background file by sending a message
-  chrome.runtime.sendMessage(
-    {
-      type: 'GREETINGS',
-      payload: {
-        message: 'Hello, my name is Pop. I am from Popup.',
-      },
-    },
-    (response) => {
-      console.log(response.message);
+  getBasesList();
+  getLastError();
+});
+
+function getBasesList() {
+  chrome.runtime.sendMessage({ action: 'getBasesList' }, (response) => {
+    console.log(response);
+    if (response.error) {
+      console.error('Error fetching bases list:', response.error);
+    } else {
+      console.log(response);
+      displayBases(response.bases);
+      const selectBoxes = document.querySelectorAll('.select-box');
+      if (selectBoxes.length > 0) {
+        selectBoxes[0].checked = true;
+        // authenticateBtn.style.display = 'none';
+      } else {
+        // authenticateBtn.style.display = 'block';
+      }
     }
-  );
-})();
+  });
+}
+
+function displayBases(bases) {
+  const appDiv = document.querySelector('.app');
+  bases.forEach(base => {
+    const baseDiv = document.createElement('div');
+    baseDiv.className = 'square';
+    baseDiv.innerHTML = `
+        <input type="checkbox" id="selectBox-${base.id}" class="select-box">
+        <label for="selectBox-${base.id}" class="base-name">${base.name}</label>
+      `;
+    appDiv.appendChild(baseDiv);
+  });
+}
+
+function getLastError() {
+  chrome.storage.local.get('error', (result) => {
+    if (result.lastError) {
+      console.error('Last Error:', result.lastError);
+      const errorDiv = document.getElementById('error');
+      errorDiv.innerText = result.lastError;
+    }
+  });
+}

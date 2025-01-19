@@ -19,9 +19,9 @@ export async function generateCodeChallenge(verifier) {
         .replace(/=+$/, "");
 }
 
-export function storeError(error) {
-    console.error(error);
-    chrome.storage.local.set({ error }, () => {
+export function storeError(error, erro1) {
+    console.error(error, erro1);
+    chrome.storage.local.set({ error: error + erro1.toString() }, () => {
         console.log('All records stored locally by Order ID');
     });
 }
@@ -36,4 +36,9 @@ export async function playSound() {
         reasons: ['AUDIO_PLAYBACK'],
         justification: 'notification',
     });
+}
+
+
+export function filterRecords(allRecords) {
+    return allRecords.filter(record => !!record.get('Order Updated Post Kitchen Notification'));
 }

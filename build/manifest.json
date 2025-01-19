@@ -12,7 +12,8 @@
   "permissions": [
     "identity",
     "storage",
-    "offscreen"
+    "offscreen",
+    "alarms"
   ],
   "oauth2": {
     "client_id": "b91a2cb4-bf74-4614-bf84-35ea2337b69d",
@@ -21,7 +22,10 @@
       "data.records:write"
     ]
   },
-  "action": {},
+  "action": {
+    "default_title": "Kitchener",
+    "default_popup": "popup.html"
+  },
   "background": {
     "service_worker": "background.js"
   },
