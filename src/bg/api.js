@@ -26,6 +26,18 @@ export async function getAllRows(base) {
   return filteredRecords;
 }
 
+export async function getRow(base, id){
+  return new Promise((resolve, reject) => {
+    base('Orders').find(id, (err, record) => {
+      if (err) {
+        storeError(err);
+        reject(err);
+      } else {
+        resolve(record);
+      }
+    });
+  });
+}
 
 export async function getBases(accessToken) {
   try {

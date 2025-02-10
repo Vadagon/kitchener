@@ -1,42 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>My Chrome Extension</title>
-    <link rel="stylesheet" href="popup.css" />
-  </head>
-  <body>
-    <div class="app">
-      <!-- <div class="square">
-        <input type="checkbox" id="selectBox" class="select-box">
-        <label for="selectBox" class="base-name">Base Name</label>
-      </div> -->
 
+<head>
+  <meta charset="UTF-8" />
+  <title>My Chrome Extension</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+
+<body>
+  <div class="app">
+    <p id="error"></p>
+    <button id="settingsBtn" class="button settings-button">Settings</button>
+
+    <div class="settingpage active">
       <button id="authenticateBtn" class="button blue-button">Authenticate Airtable</button>
-
-      <!-- <p class="counter-label">Counter</p>
-      <div id="counter" class="counter"></div>
-      <div class="button-container">
-        <button id="decrementBtn" class="button">-</button>
-        <button id="incrementBtn" class="button">+</button>
-      </div>
-
-      <hr class="divider" />
-
-      <p class="title">Chrome Extension is Ready!</p>
-       -->
-       <p id="error"></p>
+      <div class="squares"></div>
     </div>
 
-    <script src="popup.js"></script>
+    <div class="mainpage">
+      <div class="records"></div>
+    </div>
+  </div>
 
+  <script src="popup.js"></script>
+</body>
 
-
-    <!--
-      This HTML file opens when you click on icon from the toolbar.
-
-      To begin the development, run `npm run watch`.
-      To create a production bundle, use `npm run build`.
-    -->
-  </body>
 </html>
