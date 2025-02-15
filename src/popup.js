@@ -120,10 +120,11 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           humanizedDate = recordDate.toLocaleString();
         }
-        const bookingId = Array.isArray(record.Booking_ID) && record.Booking_ID.length > 0 ? record.Booking_ID[0] : record.Booking_ID['Order ID'];
-        const description = record['Order Description'] ?? record['Special Requests'];
+        console.log(record['Order Description']);
+        const title = record['Order Description'] ?? ((Array.isArray(record.Booking_ID) && record.Booking_ID.length > 0) ? record.Booking_ID[0] : record.Booking_ID['Order ID']);
+        const description =  record['Special Requests'] ?? record.Booking_ID['Order ID'];
         recordDiv.innerHTML = `
-        <p class="record-title">${bookingId}</p>
+        <p class="record-title">${title}</p>
         <p class="record-description">${description}</p>
         <p class="record-date">${humanizedDate}</p>
       `;

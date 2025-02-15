@@ -1,1 +1,4289 @@
-(()=>{var e={997:(e,t,r)=>{e.exports=function e(t,r,o){function n(i,s){if(!r[i]){if(!t[i]){if(a)return a(i,!0);var u=new Error("Cannot find module '"+i+"'");throw u.code="MODULE_NOT_FOUND",u}var c=r[i]={exports:{}};t[i][0].call(c.exports,(function(e){return n(t[i][1][e]||e)}),c,c.exports,e,t,r,o)}return r[i].exports}for(var a=void 0,i=0;i<o.length;i++)n(o[i]);return n}({1:[function(e,t,r){"use strict";var o,n="undefined"!=typeof window?window:"undefined"!=typeof self?self:null;o=n?"signal"in new Request("https://airtable.com")?n.AbortController:e("abortcontroller-polyfill/dist/cjs-ponyfill").AbortController:e("abort-controller"),t.exports=o},{"abort-controller":20,"abortcontroller-polyfill/dist/cjs-ponyfill":19}],2:[function(e,t,r){"use strict";var o=function(){function e(e,t,r){this.error=e,this.message=t,this.statusCode=r}return e.prototype.toString=function(){return[this.message,"(",this.error,")",this.statusCode?"[Http code "+this.statusCode+"]":""].join("")},e}();t.exports=o},{}],3:[function(e,t,r){"use strict";var o=this&&this.__assign||function(){return o=Object.assign||function(e){for(var t,r=1,o=arguments.length;r<o;r++)for(var n in t=arguments[r])Object.prototype.hasOwnProperty.call(t,n)&&(e[n]=t[n]);return e},o.apply(this,arguments)},n=this&&this.__importDefault||function(e){return e&&e.__esModule?e:{default:e}},a=n(e("lodash/get")),i=n(e("lodash/isPlainObject")),s=n(e("lodash/keys")),u=n(e("./fetch")),c=n(e("./abort-controller")),l=n(e("./object_to_query_param_string")),f=n(e("./airtable_error")),d=n(e("./table")),h=n(e("./http_headers")),p=n(e("./run_action")),_=n(e("./package_version")),b=n(e("./exponential_backoff_with_jitter")),y="Airtable.js/"+_.default,v=function(){function e(e,t){this._airtable=e,this._id=t}return e.prototype.table=function(e){return new d.default(this,null,e)},e.prototype.makeRequest=function(e){var t,r=this;void 0===e&&(e={});var n=a.default(e,"method","GET").toUpperCase(),i=this._airtable._endpointUrl+"/v"+this._airtable._apiVersionMajor+"/"+this._id+a.default(e,"path","/")+"?"+l.default(a.default(e,"qs",{})),s=new c.default,d={method:n,headers:this._getRequestHeaders(Object.assign({},this._airtable._customHeaders,null!==(t=e.headers)&&void 0!==t?t:{})),signal:s.signal};"body"in e&&function(e){return"GET"!==e&&"DELETE"!==e}(n)&&(d.body=JSON.stringify(e.body));var h=setTimeout((function(){s.abort()}),this._airtable._requestTimeout);return new Promise((function(t,n){u.default(i,d).then((function(i){if(clearTimeout(h),429!==i.status||r._airtable._noRetryIfRateLimited)i.json().then((function(e){var o=r._checkStatusForError(i.status,e)||g(i.status,e);o?n(o):t({statusCode:i.status,headers:i.headers,body:e})})).catch((function(){var e=g(i.status);n(e)}));else{var s=a.default(e,"_numAttempts",0),u=b.default(s);setTimeout((function(){var a=o(o({},e),{_numAttempts:s+1});r.makeRequest(a).then(t).catch(n)}),u)}})).catch((function(e){clearTimeout(h),e=new f.default("CONNECTION_ERROR",e.message,null),n(e)}))}))},e.prototype.runAction=function(e,t,r,o,n){p.default(this,e,t,r,o,n,0)},e.prototype._getRequestHeaders=function(e){var t=new h.default;t.set("Authorization","Bearer "+this._airtable._apiKey),t.set("User-Agent",y),t.set("Content-Type","application/json");for(var r=0,o=s.default(e);r<o.length;r++){var n=o[r];t.set(n,e[n])}return t.toJSON()},e.prototype._checkStatusForError=function(e,t){var r=(null!=t?t:{error:{}}).error,o=void 0===r?{}:r,n=o.type,a=o.message;return 401===e?new f.default("AUTHENTICATION_REQUIRED","You should provide valid api key to perform this operation",e):403===e?new f.default("NOT_AUTHORIZED","You are not authorized to perform this operation",e):404===e?new f.default("NOT_FOUND",null!=a?a:"Could not find what you are looking for",e):413===e?new f.default("REQUEST_TOO_LARGE","Request body is too large",e):422===e?new f.default(null!=n?n:"UNPROCESSABLE_ENTITY",null!=a?a:"The operation cannot be processed",e):429===e?new f.default("TOO_MANY_REQUESTS","You have made too many requests in a short period of time. Please retry your request later",e):500===e?new f.default("SERVER_ERROR","Try again. If the problem persists, contact support.",e):503===e?new f.default("SERVICE_UNAVAILABLE","The service is temporarily unavailable. Please retry shortly.",e):e>=400?new f.default(null!=n?n:"UNEXPECTED_ERROR",null!=a?a:"An unexpected error occurred",e):null},e.prototype.doCall=function(e){return this.table(e)},e.prototype.getId=function(){return this._id},e.createFunctor=function(t,r){var o=new e(t,r),n=function(e){return o.doCall(e)};return n._base=o,n.table=o.table.bind(o),n.makeRequest=o.makeRequest.bind(o),n.runAction=o.runAction.bind(o),n.getId=o.getId.bind(o),n},e}();function g(e,t){return i.default(t)?null:new f.default("UNEXPECTED_ERROR","The response from Airtable was invalid JSON. Please try again soon.",e)}t.exports=v},{"./abort-controller":1,"./airtable_error":2,"./exponential_backoff_with_jitter":6,"./fetch":7,"./http_headers":9,"./object_to_query_param_string":11,"./package_version":12,"./run_action":16,"./table":17,"lodash/get":77,"lodash/isPlainObject":89,"lodash/keys":93}],4:[function(e,t,r){"use strict";t.exports=function(e,t,r){return void 0===r&&(r=void 0),function(){for(var o,n=[],a=0;a<arguments.length;a++)n[a]=arguments[a];if("function"!=typeof n[o=void 0===r?n.length>0?n.length-1:0:r]){for(var i=[],s=Math.max(n.length,o),u=0;u<s;u++)i.push(n[u]);return new Promise((function(r,o){i.push((function(e,t){e?o(e):r(t)})),e.apply(t,i)}))}e.apply(t,n)}}},{}],5:[function(e,t,r){"use strict";var o={};t.exports=function(e,t,r){return function(){for(var n=[],a=0;a<arguments.length;a++)n[a]=arguments[a];o[t]||(o[t]=!0,console.warn(r)),e.apply(this,n)}}},{}],6:[function(e,t,r){"use strict";var o=(this&&this.__importDefault||function(e){return e&&e.__esModule?e:{default:e}})(e("./internal_config.json"));t.exports=function(e){var t=o.default.INITIAL_RETRY_DELAY_IF_RATE_LIMITED*Math.pow(2,e),r=Math.min(o.default.MAX_RETRY_DELAY_IF_RATE_LIMITED,t);return Math.random()*r}},{"./internal_config.json":10}],7:[function(e,t,r){"use strict";var o=(this&&this.__importDefault||function(e){return e&&e.__esModule?e:{default:e}})(e("node-fetch")),n="undefined"!=typeof window?window:"undefined"!=typeof self?self:null;t.exports=n?n.fetch.bind(n):o.default},{"node-fetch":20}],8:[function(e,t,r){"use strict";t.exports=function(e,t){return Object.prototype.hasOwnProperty.call(e,t)}},{}],9:[function(e,t,r){"use strict";var o=(this&&this.__importDefault||function(e){return e&&e.__esModule?e:{default:e}})(e("lodash/keys")),n="undefined"!=typeof window,a=function(){function e(){this._headersByLowercasedKey={}}return e.prototype.set=function(e,t){var r=e.toLowerCase();"x-airtable-user-agent"===r&&(r="user-agent",e="User-Agent"),this._headersByLowercasedKey[r]={headerKey:e,headerValue:t}},e.prototype.toJSON=function(){for(var e={},t=0,r=o.default(this._headersByLowercasedKey);t<r.length;t++){var a=r[t],i=this._headersByLowercasedKey[a];e[n&&"user-agent"===a?"X-Airtable-User-Agent":i.headerKey]=i.headerValue}return e},e}();t.exports=a},{"lodash/keys":93}],10:[function(e,t,r){t.exports={INITIAL_RETRY_DELAY_IF_RATE_LIMITED:5e3,MAX_RETRY_DELAY_IF_RATE_LIMITED:6e5}},{}],11:[function(e,t,r){"use strict";var o=this&&this.__importDefault||function(e){return e&&e.__esModule?e:{default:e}},n=o(e("lodash/isArray")),a=o(e("lodash/isNil")),i=o(e("lodash/keys"));function s(e,t,r){if(n.default(t))for(var o=0;o<t.length;o++){var a=t[o];/\[\]$/.test(e)?r(e,a):s(e+"["+("object"==typeof a&&null!==a?o:"")+"]",a,r)}else if("object"==typeof t)for(var u=0,c=i.default(t);u<c.length;u++){var l=c[u];s(e+"["+l+"]",a=t[l],r)}else r(e,t)}t.exports=function(e){for(var t=[],r=function(e,r){r=a.default(r)?"":r,t.push(encodeURIComponent(e)+"="+encodeURIComponent(r))},o=0,n=i.default(e);o<n.length;o++){var u=n[o];s(u,e[u],r)}return t.join("&").replace(/%20/g,"+")}},{"lodash/isArray":79,"lodash/isNil":85,"lodash/keys":93}],12:[function(e,t,r){"use strict";t.exports="0.12.2"},{}],13:[function(e,t,r){"use strict";var o=this&&this.__assign||function(){return o=Object.assign||function(e){for(var t,r=1,o=arguments.length;r<o;r++)for(var n in t=arguments[r])Object.prototype.hasOwnProperty.call(t,n)&&(e[n]=t[n]);return e},o.apply(this,arguments)},n=this&&this.__importDefault||function(e){return e&&e.__esModule?e:{default:e}},a=n(e("lodash/isFunction")),i=n(e("lodash/keys")),s=n(e("./record")),u=n(e("./callback_to_promise")),c=n(e("./has")),l=e("./query_params"),f=n(e("./object_to_query_param_string")),d=function(){function e(e,t){this._table=e,this._params=t,this.firstPage=u.default(h,this),this.eachPage=u.default(p,this,1),this.all=u.default(_,this)}return e.validateParams=function(t){for(var r={},o=[],n=[],a=0,s=i.default(t);a<s.length;a++){var u=s[a],l=t[u];if(c.default(e.paramValidators,u)){var f=(0,e.paramValidators[u])(l);f.pass?r[u]=l:n.push(f.error)}else o.push(u)}return{validParams:r,ignoredKeys:o,errors:n}},e.paramValidators=l.paramValidators,e}();function h(e){if(!a.default(e))throw new Error("The first parameter to `firstPage` must be a function");this.eachPage((function(t){e(null,t)}),(function(t){e(t,null)}))}function p(e,t){var r=this;if(!a.default(e))throw new Error("The first parameter to `eachPage` must be a function");if(!a.default(t)&&void 0!==t)throw new Error("The second parameter to `eachPage` must be a function or undefined");var n,i,u=o({},this._params),c="/"+this._table._urlEncodedNameOrId()+"?"+f.default(u),d={},h=null;if("post"===u.method||c.length>l.URL_CHARACTER_LENGTH_LIMIT){h=u,n="post",i="/"+this._table._urlEncodedNameOrId()+"/listRecords";for(var p=0,_=Object.keys(u);p<_.length;p++){var b=_[p];l.shouldListRecordsParamBePassedAsParameter(b)?d[b]=u[b]:h[b]=u[b]}}else n="get",d=u,i="/"+this._table._urlEncodedNameOrId();var y=function(){r._table._base.runAction(n,i,d,h,(function(o,n,a){if(o)t(o,null);else{var i=void 0;a.offset?(u.offset=a.offset,i=y):i=function(){t(null)};var c=a.records.map((function(e){return new s.default(r._table,null,e)}));e(c,i)}}))};y()}function _(e){if(!a.default(e))throw new Error("The first parameter to `all` must be a function");var t=[];this.eachPage((function(e,r){t.push.apply(t,e),r()}),(function(r){r?e(r,null):e(null,t)}))}t.exports=d},{"./callback_to_promise":4,"./has":8,"./object_to_query_param_string":11,"./query_params":14,"./record":15,"lodash/isFunction":83,"lodash/keys":93}],14:[function(e,t,r){"use strict";var o=this&&this.__importDefault||function(e){return e&&e.__esModule?e:{default:e}};Object.defineProperty(r,"__esModule",{value:!0}),r.shouldListRecordsParamBePassedAsParameter=r.URL_CHARACTER_LENGTH_LIMIT=r.paramValidators=void 0;var n=o(e("./typecheck")),a=o(e("lodash/isString")),i=o(e("lodash/isNumber")),s=o(e("lodash/isPlainObject")),u=o(e("lodash/isBoolean"));r.paramValidators={fields:n.default(n.default.isArrayOf(a.default),"the value for `fields` should be an array of strings"),filterByFormula:n.default(a.default,"the value for `filterByFormula` should be a string"),maxRecords:n.default(i.default,"the value for `maxRecords` should be a number"),pageSize:n.default(i.default,"the value for `pageSize` should be a number"),offset:n.default(i.default,"the value for `offset` should be a number"),sort:n.default(n.default.isArrayOf((function(e){return s.default(e)&&a.default(e.field)&&(void 0===e.direction||["asc","desc"].includes(e.direction))})),'the value for `sort` should be an array of sort objects. Each sort object must have a string `field` value, and an optional `direction` value that is "asc" or "desc".'),view:n.default(a.default,"the value for `view` should be a string"),cellFormat:n.default((function(e){return a.default(e)&&["json","string"].includes(e)}),'the value for `cellFormat` should be "json" or "string"'),timeZone:n.default(a.default,"the value for `timeZone` should be a string"),userLocale:n.default(a.default,"the value for `userLocale` should be a string"),method:n.default((function(e){return a.default(e)&&["get","post"].includes(e)}),'the value for `method` should be "get" or "post"'),returnFieldsByFieldId:n.default(u.default,"the value for `returnFieldsByFieldId` should be a boolean"),recordMetadata:n.default(n.default.isArrayOf(a.default),"the value for `recordMetadata` should be an array of strings")},r.URL_CHARACTER_LENGTH_LIMIT=15e3,r.shouldListRecordsParamBePassedAsParameter=function(e){return"timeZone"===e||"userLocale"===e}},{"./typecheck":18,"lodash/isBoolean":81,"lodash/isNumber":86,"lodash/isPlainObject":89,"lodash/isString":90}],15:[function(e,t,r){"use strict";var o=this&&this.__assign||function(){return o=Object.assign||function(e){for(var t,r=1,o=arguments.length;r<o;r++)for(var n in t=arguments[r])Object.prototype.hasOwnProperty.call(t,n)&&(e[n]=t[n]);return e},o.apply(this,arguments)},n=(this&&this.__importDefault||function(e){return e&&e.__esModule?e:{default:e}})(e("./callback_to_promise")),a=function(){function e(e,t,r){this._table=e,this.id=t||r.id,r&&(this.commentCount=r.commentCount),this.setRawJson(r),this.save=n.default(i,this),this.patchUpdate=n.default(s,this),this.putUpdate=n.default(u,this),this.destroy=n.default(c,this),this.fetch=n.default(l,this),this.updateFields=this.patchUpdate,this.replaceFields=this.putUpdate}return e.prototype.getId=function(){return this.id},e.prototype.get=function(e){return this.fields[e]},e.prototype.set=function(e,t){this.fields[e]=t},e.prototype.setRawJson=function(e){this._rawJson=e,this.fields=this._rawJson&&this._rawJson.fields||{}},e}();function i(e){this.putUpdate(this.fields,e)}function s(e,t,r){var n=this;r||(r=t,t={});var a=o({fields:e},t);this._table._base.runAction("patch","/"+this._table._urlEncodedNameOrId()+"/"+this.id,{},a,(function(e,t,o){e?r(e):(n.setRawJson(o),r(null,n))}))}function u(e,t,r){var n=this;r||(r=t,t={});var a=o({fields:e},t);this._table._base.runAction("put","/"+this._table._urlEncodedNameOrId()+"/"+this.id,{},a,(function(e,t,o){e?r(e):(n.setRawJson(o),r(null,n))}))}function c(e){var t=this;this._table._base.runAction("delete","/"+this._table._urlEncodedNameOrId()+"/"+this.id,{},null,(function(r){r?e(r):e(null,t)}))}function l(e){var t=this;this._table._base.runAction("get","/"+this._table._urlEncodedNameOrId()+"/"+this.id,{},null,(function(r,o,n){r?e(r):(t.setRawJson(n),e(null,t))}))}t.exports=a},{"./callback_to_promise":4}],16:[function(e,t,r){"use strict";var o=this&&this.__importDefault||function(e){return e&&e.__esModule?e:{default:e}},n=o(e("./exponential_backoff_with_jitter")),a=o(e("./object_to_query_param_string")),i=o(e("./package_version")),s=o(e("./fetch")),u=o(e("./abort-controller")),c="Airtable.js/"+i.default;t.exports=function e(t,r,o,i,l,f,d){var h=t._airtable._endpointUrl+"/v"+t._airtable._apiVersionMajor+"/"+t._id+o+"?"+a.default(i),p={authorization:"Bearer "+t._airtable._apiKey,"x-api-version":t._airtable._apiVersion,"x-airtable-application-id":t.getId(),"content-type":"application/json"};"undefined"!=typeof window?p["x-airtable-user-agent"]=c:p["User-Agent"]=c;var _=new u.default,b=r.toUpperCase(),y={method:b,headers:p,signal:_.signal};null!==l&&("GET"===b||"HEAD"===b?console.warn("body argument to runAction are ignored with GET or HEAD requests"):y.body=JSON.stringify(l));var v=setTimeout((function(){_.abort()}),t._airtable._requestTimeout);s.default(h,y).then((function(a){if(clearTimeout(v),429!==a.status||t._airtable._noRetryIfRateLimited)a.json().then((function(e){var r=t._checkStatusForError(a.status,e),o={};Object.keys(a).forEach((function(e){o[e]=a[e]})),o.body=e,o.statusCode=a.status,f(r,o,e)})).catch((function(){f(t._checkStatusForError(a.status))}));else{var s=n.default(d);setTimeout((function(){e(t,r,o,i,l,f,d+1)}),s)}})).catch((function(e){clearTimeout(v),f(e)}))}},{"./abort-controller":1,"./exponential_backoff_with_jitter":6,"./fetch":7,"./object_to_query_param_string":11,"./package_version":12}],17:[function(e,t,r){"use strict";var o=this&&this.__assign||function(){return o=Object.assign||function(e){for(var t,r=1,o=arguments.length;r<o;r++)for(var n in t=arguments[r])Object.prototype.hasOwnProperty.call(t,n)&&(e[n]=t[n]);return e},o.apply(this,arguments)},n=this&&this.__importDefault||function(e){return e&&e.__esModule?e:{default:e}},a=n(e("lodash/isPlainObject")),i=n(e("./deprecate")),s=n(e("./query")),u=e("./query_params"),c=n(e("./object_to_query_param_string")),l=n(e("./record")),f=n(e("./callback_to_promise")),d=function(){function e(e,t,r){if(!t&&!r)throw new Error("Table name or table ID is required");this._base=e,this.id=t,this.name=r,this.find=f.default(this._findRecordById,this),this.select=this._selectRecords.bind(this),this.create=f.default(this._createRecords,this),this.update=f.default(this._updateRecords.bind(this,!1),this),this.replace=f.default(this._updateRecords.bind(this,!0),this),this.destroy=f.default(this._destroyRecord,this),this.list=i.default(this._listRecords.bind(this),"table.list","Airtable: `list()` is deprecated. Use `select()` instead."),this.forEach=i.default(this._forEachRecord.bind(this),"table.forEach","Airtable: `forEach()` is deprecated. Use `select()` instead.")}return e.prototype._findRecordById=function(e,t){new l.default(this,e).fetch(t)},e.prototype._selectRecords=function(e){if(void 0===e&&(e={}),arguments.length>1&&console.warn("Airtable: `select` takes only one parameter, but it was given "+arguments.length+" parameters. Use `eachPage` or `firstPage` to fetch records."),a.default(e)){var t=s.default.validateParams(e);if(t.errors.length){var r=t.errors.map((function(e){return"  * "+e}));throw new Error("Airtable: invalid parameters for `select`:\n"+r.join("\n"))}return t.ignoredKeys.length&&console.warn("Airtable: the following parameters to `select` will be ignored: "+t.ignoredKeys.join(", ")),new s.default(this,t.validParams)}throw new Error("Airtable: the parameter for `select` should be a plain object or undefined.")},e.prototype._urlEncodedNameOrId=function(){return this.id||encodeURIComponent(this.name)},e.prototype._createRecords=function(e,t,r){var n,a=this,i=Array.isArray(e);r||(r=t,t={}),n=o(i?{records:e}:{fields:e},t),this._base.runAction("post","/"+this._urlEncodedNameOrId()+"/",{},n,(function(e,t,o){var n;e?r(e):(n=i?o.records.map((function(e){return new l.default(a,e.id,e)})):new l.default(a,o.id,o),r(null,n))}))},e.prototype._updateRecords=function(e,t,r,n,i){var s,u=this;if(Array.isArray(t)){var c=t;s=a.default(r)?r:{},i=n||r;var f=e?"put":"patch",d=o({records:c},s);this._base.runAction(f,"/"+this._urlEncodedNameOrId()+"/",{},d,(function(e,t,r){if(e)i(e);else{var o=r.records.map((function(e){return new l.default(u,e.id,e)}));i(null,o)}}))}else{var h=t,p=r;s=a.default(n)?n:{},i=i||n;var _=new l.default(this,h);e?_.putUpdate(p,s,i):_.patchUpdate(p,s,i)}},e.prototype._destroyRecord=function(e,t){var r=this;if(Array.isArray(e)){var o={records:e};this._base.runAction("delete","/"+this._urlEncodedNameOrId(),o,null,(function(e,o,n){if(e)t(e);else{var a=n.records.map((function(e){var t=e.id;return new l.default(r,t,null)}));t(null,a)}}))}else new l.default(this,e).destroy(t)},e.prototype._listRecords=function(e,t,r,n){var a=this;n||(n=r,r={});var i,s,f="/"+this._urlEncodedNameOrId()+"?"+c.default(r),d={},h=null;if("function"!=typeof r&&"post"===r.method||f.length>u.URL_CHARACTER_LENGTH_LIMIT){i="/"+this._urlEncodedNameOrId()+"/listRecords",h=o(o({},e&&{pageSize:e}),t&&{offset:t}),s="post";for(var p=0,_=Object.keys(r);p<_.length;p++){var b=_[p];u.shouldListRecordsParamBePassedAsParameter(b)?d[b]=r[b]:h[b]=r[b]}}else s="get",i="/"+this._urlEncodedNameOrId()+"/",d=o({limit:e,offset:t},r);this._base.runAction(s,i,d,h,(function(e,t,r){if(e)n(e);else{var o=r.records.map((function(e){return new l.default(a,null,e)}));n(null,o,r.offset)}}))},e.prototype._forEachRecord=function(t,r,o){var n=this;2===arguments.length&&(o=r,r=t,t={});var a=e.__recordsPerPageForIteration||100,i=null,s=function(){n._listRecords(a,i,t,(function(e,t,n){if(e)o(e);else{for(var a=0;a<t.length;a++)r(t[a]);n?(i=n,s()):o()}}))};s()},e}();t.exports=d},{"./callback_to_promise":4,"./deprecate":5,"./object_to_query_param_string":11,"./query":13,"./query_params":14,"./record":15,"lodash/isPlainObject":89}],18:[function(e,t,r){"use strict";function o(e,t){return function(r){return e(r)?{pass:!0}:{pass:!1,error:t}}}o.isOneOf=function(e){return e.includes.bind(e)},o.isArrayOf=function(e){return function(t){return Array.isArray(t)&&t.every(e)}},t.exports=o},{}],19:[function(e,t,r){"use strict";function o(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function n(e,t){for(var r=0;r<t.length;r++){var o=t[r];o.enumerable=o.enumerable||!1,o.configurable=!0,"value"in o&&(o.writable=!0),Object.defineProperty(e,o.key,o)}}function a(e,t,r){return t&&n(e.prototype,t),r&&n(e,r),e}function i(e){return i=Object.setPrototypeOf?Object.getPrototypeOf:function(e){return e.__proto__||Object.getPrototypeOf(e)},i(e)}function s(e,t){return s=Object.setPrototypeOf||function(e,t){return e.__proto__=t,e},s(e,t)}function u(e){if(void 0===e)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return e}function c(e,t,r){return c="undefined"!=typeof Reflect&&Reflect.get?Reflect.get:function(e,t,r){var o=function(e,t){for(;!Object.prototype.hasOwnProperty.call(e,t)&&null!==(e=i(e)););return e}(e,t);if(o){var n=Object.getOwnPropertyDescriptor(o,t);return n.get?n.get.call(r):n.value}},c(e,t,r||e)}Object.defineProperty(r,"__esModule",{value:!0});var l=function(){function e(){o(this,e),Object.defineProperty(this,"listeners",{value:{},writable:!0,configurable:!0})}return a(e,[{key:"addEventListener",value:function(e,t){e in this.listeners||(this.listeners[e]=[]),this.listeners[e].push(t)}},{key:"removeEventListener",value:function(e,t){if(e in this.listeners)for(var r=this.listeners[e],o=0,n=r.length;o<n;o++)if(r[o]===t)return void r.splice(o,1)}},{key:"dispatchEvent",value:function(e){var t=this;if(e.type in this.listeners){for(var r=function(r){setTimeout((function(){return r.call(t,e)}))},o=this.listeners[e.type],n=0,a=o.length;n<a;n++)r(o[n]);return!e.defaultPrevented}}}]),e}(),f=function(e){function t(){var e;return o(this,t),(e=function(e,t){return!t||"object"!=typeof t&&"function"!=typeof t?u(e):t}(this,i(t).call(this))).listeners||l.call(u(e)),Object.defineProperty(u(e),"aborted",{value:!1,writable:!0,configurable:!0}),Object.defineProperty(u(e),"onabort",{value:null,writable:!0,configurable:!0}),e}return function(e,t){if("function"!=typeof t&&null!==t)throw new TypeError("Super expression must either be null or a function");e.prototype=Object.create(t&&t.prototype,{constructor:{value:e,writable:!0,configurable:!0}}),t&&s(e,t)}(t,e),a(t,[{key:"toString",value:function(){return"[object AbortSignal]"}},{key:"dispatchEvent",value:function(e){"abort"===e.type&&(this.aborted=!0,"function"==typeof this.onabort&&this.onabort.call(this,e)),c(i(t.prototype),"dispatchEvent",this).call(this,e)}}]),t}(l),d=function(){function e(){o(this,e),Object.defineProperty(this,"signal",{value:new f,writable:!0,configurable:!0})}return a(e,[{key:"abort",value:function(){var e;try{e=new Event("abort")}catch(t){"undefined"!=typeof document?document.createEvent?(e=document.createEvent("Event")).initEvent("abort",!1,!1):(e=document.createEventObject()).type="abort":e={type:"abort",bubbles:!1,cancelable:!1}}this.signal.dispatchEvent(e)}},{key:"toString",value:function(){return"[object AbortController]"}}]),e}();"undefined"!=typeof Symbol&&Symbol.toStringTag&&(d.prototype[Symbol.toStringTag]="AbortController",f.prototype[Symbol.toStringTag]="AbortSignal"),r.AbortController=d,r.AbortSignal=f,r.abortableFetch=function(e){"function"==typeof e&&(e={fetch:e});var t=e,r=t.fetch,o=t.Request,n=void 0===o?r.Request:o,a=t.AbortController,i=t.__FORCE_INSTALL_ABORTCONTROLLER_POLYFILL,s=void 0!==i&&i;if(!function(e){return e.__FORCE_INSTALL_ABORTCONTROLLER_POLYFILL?(console.log("__FORCE_INSTALL_ABORTCONTROLLER_POLYFILL=true is set, will force install polyfill"),!0):"function"==typeof e.Request&&!e.Request.prototype.hasOwnProperty("signal")||!e.AbortController}({fetch:r,Request:n,AbortController:a,__FORCE_INSTALL_ABORTCONTROLLER_POLYFILL:s}))return{fetch:r,Request:u};var u=n;(u&&!u.prototype.hasOwnProperty("signal")||s)&&((u=function(e,t){var r;t&&t.signal&&(r=t.signal,delete t.signal);var o=new n(e,t);return r&&Object.defineProperty(o,"signal",{writable:!1,enumerable:!1,configurable:!0,value:r}),o}).prototype=n.prototype);var c=r;return{fetch:function(e,t){var r=u&&u.prototype.isPrototypeOf(e)?e.signal:t?t.signal:void 0;if(r){var o;try{o=new DOMException("Aborted","AbortError")}catch(e){(o=new Error("Aborted")).name="AbortError"}if(r.aborted)return Promise.reject(o);var n=new Promise((function(e,t){r.addEventListener("abort",(function(){return t(o)}),{once:!0})}));return t&&t.signal&&delete t.signal,Promise.race([n,c(e,t)])}return c(e,t)},Request:u}}},{}],20:[function(e,t,r){},{}],21:[function(e,t,r){var o=e("./_hashClear"),n=e("./_hashDelete"),a=e("./_hashGet"),i=e("./_hashHas"),s=e("./_hashSet");function u(e){var t=-1,r=null==e?0:e.length;for(this.clear();++t<r;){var o=e[t];this.set(o[0],o[1])}}u.prototype.clear=o,u.prototype.delete=n,u.prototype.get=a,u.prototype.has=i,u.prototype.set=s,t.exports=u},{"./_hashClear":46,"./_hashDelete":47,"./_hashGet":48,"./_hashHas":49,"./_hashSet":50}],22:[function(e,t,r){var o=e("./_listCacheClear"),n=e("./_listCacheDelete"),a=e("./_listCacheGet"),i=e("./_listCacheHas"),s=e("./_listCacheSet");function u(e){var t=-1,r=null==e?0:e.length;for(this.clear();++t<r;){var o=e[t];this.set(o[0],o[1])}}u.prototype.clear=o,u.prototype.delete=n,u.prototype.get=a,u.prototype.has=i,u.prototype.set=s,t.exports=u},{"./_listCacheClear":56,"./_listCacheDelete":57,"./_listCacheGet":58,"./_listCacheHas":59,"./_listCacheSet":60}],23:[function(e,t,r){var o=e("./_getNative")(e("./_root"),"Map");t.exports=o},{"./_getNative":42,"./_root":72}],24:[function(e,t,r){var o=e("./_mapCacheClear"),n=e("./_mapCacheDelete"),a=e("./_mapCacheGet"),i=e("./_mapCacheHas"),s=e("./_mapCacheSet");function u(e){var t=-1,r=null==e?0:e.length;for(this.clear();++t<r;){var o=e[t];this.set(o[0],o[1])}}u.prototype.clear=o,u.prototype.delete=n,u.prototype.get=a,u.prototype.has=i,u.prototype.set=s,t.exports=u},{"./_mapCacheClear":61,"./_mapCacheDelete":62,"./_mapCacheGet":63,"./_mapCacheHas":64,"./_mapCacheSet":65}],25:[function(e,t,r){var o=e("./_root").Symbol;t.exports=o},{"./_root":72}],26:[function(e,t,r){var o=e("./_baseTimes"),n=e("./isArguments"),a=e("./isArray"),i=e("./isBuffer"),s=e("./_isIndex"),u=e("./isTypedArray"),c=Object.prototype.hasOwnProperty;t.exports=function(e,t){var r=a(e),l=!r&&n(e),f=!r&&!l&&i(e),d=!r&&!l&&!f&&u(e),h=r||l||f||d,p=h?o(e.length,String):[],_=p.length;for(var b in e)!t&&!c.call(e,b)||h&&("length"==b||f&&("offset"==b||"parent"==b)||d&&("buffer"==b||"byteLength"==b||"byteOffset"==b)||s(b,_))||p.push(b);return p}},{"./_baseTimes":35,"./_isIndex":51,"./isArguments":78,"./isArray":79,"./isBuffer":82,"./isTypedArray":92}],27:[function(e,t,r){t.exports=function(e,t){for(var r=-1,o=null==e?0:e.length,n=Array(o);++r<o;)n[r]=t(e[r],r,e);return n}},{}],28:[function(e,t,r){var o=e("./eq");t.exports=function(e,t){for(var r=e.length;r--;)if(o(e[r][0],t))return r;return-1}},{"./eq":76}],29:[function(e,t,r){var o=e("./_castPath"),n=e("./_toKey");t.exports=function(e,t){for(var r=0,a=(t=o(t,e)).length;null!=e&&r<a;)e=e[n(t[r++])];return r&&r==a?e:void 0}},{"./_castPath":38,"./_toKey":74}],30:[function(e,t,r){var o=e("./_Symbol"),n=e("./_getRawTag"),a=e("./_objectToString"),i=o?o.toStringTag:void 0;t.exports=function(e){return null==e?void 0===e?"[object Undefined]":"[object Null]":i&&i in Object(e)?n(e):a(e)}},{"./_Symbol":25,"./_getRawTag":44,"./_objectToString":70}],31:[function(e,t,r){var o=e("./_baseGetTag"),n=e("./isObjectLike");t.exports=function(e){return n(e)&&"[object Arguments]"==o(e)}},{"./_baseGetTag":30,"./isObjectLike":88}],32:[function(e,t,r){var o=e("./isFunction"),n=e("./_isMasked"),a=e("./isObject"),i=e("./_toSource"),s=/^\[object .+?Constructor\]$/,u=Function.prototype,c=Object.prototype,l=u.toString,f=c.hasOwnProperty,d=RegExp("^"+l.call(f).replace(/[\\^$.*+?()[\]{}|]/g,"\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g,"$1.*?")+"$");t.exports=function(e){return!(!a(e)||n(e))&&(o(e)?d:s).test(i(e))}},{"./_isMasked":54,"./_toSource":75,"./isFunction":83,"./isObject":87}],33:[function(e,t,r){var o=e("./_baseGetTag"),n=e("./isLength"),a=e("./isObjectLike"),i={};i["[object Float32Array]"]=i["[object Float64Array]"]=i["[object Int8Array]"]=i["[object Int16Array]"]=i["[object Int32Array]"]=i["[object Uint8Array]"]=i["[object Uint8ClampedArray]"]=i["[object Uint16Array]"]=i["[object Uint32Array]"]=!0,i["[object Arguments]"]=i["[object Array]"]=i["[object ArrayBuffer]"]=i["[object Boolean]"]=i["[object DataView]"]=i["[object Date]"]=i["[object Error]"]=i["[object Function]"]=i["[object Map]"]=i["[object Number]"]=i["[object Object]"]=i["[object RegExp]"]=i["[object Set]"]=i["[object String]"]=i["[object WeakMap]"]=!1,t.exports=function(e){return a(e)&&n(e.length)&&!!i[o(e)]}},{"./_baseGetTag":30,"./isLength":84,"./isObjectLike":88}],34:[function(e,t,r){var o=e("./_isPrototype"),n=e("./_nativeKeys"),a=Object.prototype.hasOwnProperty;t.exports=function(e){if(!o(e))return n(e);var t=[];for(var r in Object(e))a.call(e,r)&&"constructor"!=r&&t.push(r);return t}},{"./_isPrototype":55,"./_nativeKeys":68}],35:[function(e,t,r){t.exports=function(e,t){for(var r=-1,o=Array(e);++r<e;)o[r]=t(r);return o}},{}],36:[function(e,t,r){var o=e("./_Symbol"),n=e("./_arrayMap"),a=e("./isArray"),i=e("./isSymbol"),s=o?o.prototype:void 0,u=s?s.toString:void 0;t.exports=function e(t){if("string"==typeof t)return t;if(a(t))return n(t,e)+"";if(i(t))return u?u.call(t):"";var r=t+"";return"0"==r&&1/t==-1/0?"-0":r}},{"./_Symbol":25,"./_arrayMap":27,"./isArray":79,"./isSymbol":91}],37:[function(e,t,r){t.exports=function(e){return function(t){return e(t)}}},{}],38:[function(e,t,r){var o=e("./isArray"),n=e("./_isKey"),a=e("./_stringToPath"),i=e("./toString");t.exports=function(e,t){return o(e)?e:n(e,t)?[e]:a(i(e))}},{"./_isKey":52,"./_stringToPath":73,"./isArray":79,"./toString":96}],39:[function(e,t,r){var o=e("./_root")["__core-js_shared__"];t.exports=o},{"./_root":72}],40:[function(e,t,o){(function(e){var r="object"==typeof e&&e&&e.Object===Object&&e;t.exports=r}).call(this,void 0!==r.g?r.g:"undefined"!=typeof self?self:"undefined"!=typeof window?window:{})},{}],41:[function(e,t,r){var o=e("./_isKeyable");t.exports=function(e,t){var r=e.__data__;return o(t)?r["string"==typeof t?"string":"hash"]:r.map}},{"./_isKeyable":53}],42:[function(e,t,r){var o=e("./_baseIsNative"),n=e("./_getValue");t.exports=function(e,t){var r=n(e,t);return o(r)?r:void 0}},{"./_baseIsNative":32,"./_getValue":45}],43:[function(e,t,r){var o=e("./_overArg")(Object.getPrototypeOf,Object);t.exports=o},{"./_overArg":71}],44:[function(e,t,r){var o=e("./_Symbol"),n=Object.prototype,a=n.hasOwnProperty,i=n.toString,s=o?o.toStringTag:void 0;t.exports=function(e){var t=a.call(e,s),r=e[s];try{e[s]=void 0;var o=!0}catch(e){}var n=i.call(e);return o&&(t?e[s]=r:delete e[s]),n}},{"./_Symbol":25}],45:[function(e,t,r){t.exports=function(e,t){return null==e?void 0:e[t]}},{}],46:[function(e,t,r){var o=e("./_nativeCreate");t.exports=function(){this.__data__=o?o(null):{},this.size=0}},{"./_nativeCreate":67}],47:[function(e,t,r){t.exports=function(e){var t=this.has(e)&&delete this.__data__[e];return this.size-=t?1:0,t}},{}],48:[function(e,t,r){var o=e("./_nativeCreate"),n=Object.prototype.hasOwnProperty;t.exports=function(e){var t=this.__data__;if(o){var r=t[e];return"__lodash_hash_undefined__"===r?void 0:r}return n.call(t,e)?t[e]:void 0}},{"./_nativeCreate":67}],49:[function(e,t,r){var o=e("./_nativeCreate"),n=Object.prototype.hasOwnProperty;t.exports=function(e){var t=this.__data__;return o?void 0!==t[e]:n.call(t,e)}},{"./_nativeCreate":67}],50:[function(e,t,r){var o=e("./_nativeCreate");t.exports=function(e,t){var r=this.__data__;return this.size+=this.has(e)?0:1,r[e]=o&&void 0===t?"__lodash_hash_undefined__":t,this}},{"./_nativeCreate":67}],51:[function(e,t,r){var o=/^(?:0|[1-9]\d*)$/;t.exports=function(e,t){var r=typeof e;return!!(t=null==t?9007199254740991:t)&&("number"==r||"symbol"!=r&&o.test(e))&&e>-1&&e%1==0&&e<t}},{}],52:[function(e,t,r){var o=e("./isArray"),n=e("./isSymbol"),a=/\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,i=/^\w*$/;t.exports=function(e,t){if(o(e))return!1;var r=typeof e;return!("number"!=r&&"symbol"!=r&&"boolean"!=r&&null!=e&&!n(e))||i.test(e)||!a.test(e)||null!=t&&e in Object(t)}},{"./isArray":79,"./isSymbol":91}],53:[function(e,t,r){t.exports=function(e){var t=typeof e;return"string"==t||"number"==t||"symbol"==t||"boolean"==t?"__proto__"!==e:null===e}},{}],54:[function(e,t,r){var o,n=e("./_coreJsData"),a=(o=/[^.]+$/.exec(n&&n.keys&&n.keys.IE_PROTO||""))?"Symbol(src)_1."+o:"";t.exports=function(e){return!!a&&a in e}},{"./_coreJsData":39}],55:[function(e,t,r){var o=Object.prototype;t.exports=function(e){var t=e&&e.constructor;return e===("function"==typeof t&&t.prototype||o)}},{}],56:[function(e,t,r){t.exports=function(){this.__data__=[],this.size=0}},{}],57:[function(e,t,r){var o=e("./_assocIndexOf"),n=Array.prototype.splice;t.exports=function(e){var t=this.__data__,r=o(t,e);return!(r<0||(r==t.length-1?t.pop():n.call(t,r,1),--this.size,0))}},{"./_assocIndexOf":28}],58:[function(e,t,r){var o=e("./_assocIndexOf");t.exports=function(e){var t=this.__data__,r=o(t,e);return r<0?void 0:t[r][1]}},{"./_assocIndexOf":28}],59:[function(e,t,r){var o=e("./_assocIndexOf");t.exports=function(e){return o(this.__data__,e)>-1}},{"./_assocIndexOf":28}],60:[function(e,t,r){var o=e("./_assocIndexOf");t.exports=function(e,t){var r=this.__data__,n=o(r,e);return n<0?(++this.size,r.push([e,t])):r[n][1]=t,this}},{"./_assocIndexOf":28}],61:[function(e,t,r){var o=e("./_Hash"),n=e("./_ListCache"),a=e("./_Map");t.exports=function(){this.size=0,this.__data__={hash:new o,map:new(a||n),string:new o}}},{"./_Hash":21,"./_ListCache":22,"./_Map":23}],62:[function(e,t,r){var o=e("./_getMapData");t.exports=function(e){var t=o(this,e).delete(e);return this.size-=t?1:0,t}},{"./_getMapData":41}],63:[function(e,t,r){var o=e("./_getMapData");t.exports=function(e){return o(this,e).get(e)}},{"./_getMapData":41}],64:[function(e,t,r){var o=e("./_getMapData");t.exports=function(e){return o(this,e).has(e)}},{"./_getMapData":41}],65:[function(e,t,r){var o=e("./_getMapData");t.exports=function(e,t){var r=o(this,e),n=r.size;return r.set(e,t),this.size+=r.size==n?0:1,this}},{"./_getMapData":41}],66:[function(e,t,r){var o=e("./memoize");t.exports=function(e){var t=o(e,(function(e){return 500===r.size&&r.clear(),e})),r=t.cache;return t}},{"./memoize":94}],67:[function(e,t,r){var o=e("./_getNative")(Object,"create");t.exports=o},{"./_getNative":42}],68:[function(e,t,r){var o=e("./_overArg")(Object.keys,Object);t.exports=o},{"./_overArg":71}],69:[function(e,t,r){var o=e("./_freeGlobal"),n="object"==typeof r&&r&&!r.nodeType&&r,a=n&&"object"==typeof t&&t&&!t.nodeType&&t,i=a&&a.exports===n&&o.process,s=function(){try{return a&&a.require&&a.require("util").types||i&&i.binding&&i.binding("util")}catch(e){}}();t.exports=s},{"./_freeGlobal":40}],70:[function(e,t,r){var o=Object.prototype.toString;t.exports=function(e){return o.call(e)}},{}],71:[function(e,t,r){t.exports=function(e,t){return function(r){return e(t(r))}}},{}],72:[function(e,t,r){var o=e("./_freeGlobal"),n="object"==typeof self&&self&&self.Object===Object&&self,a=o||n||Function("return this")();t.exports=a},{"./_freeGlobal":40}],73:[function(e,t,r){var o=e("./_memoizeCapped"),n=/[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g,a=/\\(\\)?/g,i=o((function(e){var t=[];return 46===e.charCodeAt(0)&&t.push(""),e.replace(n,(function(e,r,o,n){t.push(o?n.replace(a,"$1"):r||e)})),t}));t.exports=i},{"./_memoizeCapped":66}],74:[function(e,t,r){var o=e("./isSymbol");t.exports=function(e){if("string"==typeof e||o(e))return e;var t=e+"";return"0"==t&&1/e==-1/0?"-0":t}},{"./isSymbol":91}],75:[function(e,t,r){var o=Function.prototype.toString;t.exports=function(e){if(null!=e){try{return o.call(e)}catch(e){}try{return e+""}catch(e){}}return""}},{}],76:[function(e,t,r){t.exports=function(e,t){return e===t||e!=e&&t!=t}},{}],77:[function(e,t,r){var o=e("./_baseGet");t.exports=function(e,t,r){var n=null==e?void 0:o(e,t);return void 0===n?r:n}},{"./_baseGet":29}],78:[function(e,t,r){var o=e("./_baseIsArguments"),n=e("./isObjectLike"),a=Object.prototype,i=a.hasOwnProperty,s=a.propertyIsEnumerable,u=o(function(){return arguments}())?o:function(e){return n(e)&&i.call(e,"callee")&&!s.call(e,"callee")};t.exports=u},{"./_baseIsArguments":31,"./isObjectLike":88}],79:[function(e,t,r){var o=Array.isArray;t.exports=o},{}],80:[function(e,t,r){var o=e("./isFunction"),n=e("./isLength");t.exports=function(e){return null!=e&&n(e.length)&&!o(e)}},{"./isFunction":83,"./isLength":84}],81:[function(e,t,r){var o=e("./_baseGetTag"),n=e("./isObjectLike");t.exports=function(e){return!0===e||!1===e||n(e)&&"[object Boolean]"==o(e)}},{"./_baseGetTag":30,"./isObjectLike":88}],82:[function(e,t,r){var o=e("./_root"),n=e("./stubFalse"),a="object"==typeof r&&r&&!r.nodeType&&r,i=a&&"object"==typeof t&&t&&!t.nodeType&&t,s=i&&i.exports===a?o.Buffer:void 0,u=(s?s.isBuffer:void 0)||n;t.exports=u},{"./_root":72,"./stubFalse":95}],83:[function(e,t,r){var o=e("./_baseGetTag"),n=e("./isObject");t.exports=function(e){if(!n(e))return!1;var t=o(e);return"[object Function]"==t||"[object GeneratorFunction]"==t||"[object AsyncFunction]"==t||"[object Proxy]"==t}},{"./_baseGetTag":30,"./isObject":87}],84:[function(e,t,r){t.exports=function(e){return"number"==typeof e&&e>-1&&e%1==0&&e<=9007199254740991}},{}],85:[function(e,t,r){t.exports=function(e){return null==e}},{}],86:[function(e,t,r){var o=e("./_baseGetTag"),n=e("./isObjectLike");t.exports=function(e){return"number"==typeof e||n(e)&&"[object Number]"==o(e)}},{"./_baseGetTag":30,"./isObjectLike":88}],87:[function(e,t,r){t.exports=function(e){var t=typeof e;return null!=e&&("object"==t||"function"==t)}},{}],88:[function(e,t,r){t.exports=function(e){return null!=e&&"object"==typeof e}},{}],89:[function(e,t,r){var o=e("./_baseGetTag"),n=e("./_getPrototype"),a=e("./isObjectLike"),i=Function.prototype,s=Object.prototype,u=i.toString,c=s.hasOwnProperty,l=u.call(Object);t.exports=function(e){if(!a(e)||"[object Object]"!=o(e))return!1;var t=n(e);if(null===t)return!0;var r=c.call(t,"constructor")&&t.constructor;return"function"==typeof r&&r instanceof r&&u.call(r)==l}},{"./_baseGetTag":30,"./_getPrototype":43,"./isObjectLike":88}],90:[function(e,t,r){var o=e("./_baseGetTag"),n=e("./isArray"),a=e("./isObjectLike");t.exports=function(e){return"string"==typeof e||!n(e)&&a(e)&&"[object String]"==o(e)}},{"./_baseGetTag":30,"./isArray":79,"./isObjectLike":88}],91:[function(e,t,r){var o=e("./_baseGetTag"),n=e("./isObjectLike");t.exports=function(e){return"symbol"==typeof e||n(e)&&"[object Symbol]"==o(e)}},{"./_baseGetTag":30,"./isObjectLike":88}],92:[function(e,t,r){var o=e("./_baseIsTypedArray"),n=e("./_baseUnary"),a=e("./_nodeUtil"),i=a&&a.isTypedArray,s=i?n(i):o;t.exports=s},{"./_baseIsTypedArray":33,"./_baseUnary":37,"./_nodeUtil":69}],93:[function(e,t,r){var o=e("./_arrayLikeKeys"),n=e("./_baseKeys"),a=e("./isArrayLike");t.exports=function(e){return a(e)?o(e):n(e)}},{"./_arrayLikeKeys":26,"./_baseKeys":34,"./isArrayLike":80}],94:[function(e,t,r){var o=e("./_MapCache");function n(e,t){if("function"!=typeof e||null!=t&&"function"!=typeof t)throw new TypeError("Expected a function");var r=function(){var o=arguments,n=t?t.apply(this,o):o[0],a=r.cache;if(a.has(n))return a.get(n);var i=e.apply(this,o);return r.cache=a.set(n,i)||a,i};return r.cache=new(n.Cache||o),r}n.Cache=o,t.exports=n},{"./_MapCache":24}],95:[function(e,t,r){t.exports=function(){return!1}},{}],96:[function(e,t,r){var o=e("./_baseToString");t.exports=function(e){return null==e?"":o(e)}},{"./_baseToString":36}],airtable:[function(e,t,r){"use strict";var o=this&&this.__importDefault||function(e){return e&&e.__esModule?e:{default:e}},n=o(e("./base")),a=o(e("./record")),i=o(e("./table")),s=o(e("./airtable_error")),u=function(){function e(t){void 0===t&&(t={});var r=e.default_config(),o=t.apiVersion||e.apiVersion||r.apiVersion;if(Object.defineProperties(this,{_apiKey:{value:t.apiKey||e.apiKey||r.apiKey},_apiVersion:{value:o},_apiVersionMajor:{value:o.split(".")[0]},_customHeaders:{value:t.customHeaders||{}},_endpointUrl:{value:t.endpointUrl||e.endpointUrl||r.endpointUrl},_noRetryIfRateLimited:{value:t.noRetryIfRateLimited||e.noRetryIfRateLimited||r.noRetryIfRateLimited},_requestTimeout:{value:t.requestTimeout||e.requestTimeout||r.requestTimeout}}),!this._apiKey)throw new Error("An API key is required to connect to Airtable")}return e.prototype.base=function(e){return n.default.createFunctor(this,e)},e.default_config=function(){return{endpointUrl:"https://api.airtable.com",apiVersion:"0.1.0",apiKey:"",noRetryIfRateLimited:!1,requestTimeout:3e5}},e.configure=function(t){var r=t.apiKey,o=t.endpointUrl,n=t.apiVersion,a=t.noRetryIfRateLimited,i=t.requestTimeout;e.apiKey=r,e.endpointUrl=o,e.apiVersion=n,e.noRetryIfRateLimited=a,e.requestTimeout=i},e.base=function(t){return(new e).base(t)},e.Base=n.default,e.Record=a.default,e.Table=i.default,e.Error=s.default,e}();t.exports=u},{"./airtable_error":2,"./base":3,"./record":15,"./table":17}]},{},["airtable"])("airtable")}},t={};function r(o){var n=t[o];if(void 0!==n)return n.exports;var a=t[o]={exports:{}};return e[o](a,a.exports,r),a.exports}r.n=e=>{var t=e&&e.__esModule?()=>e.default:()=>e;return r.d(t,{a:t}),t},r.d=(e,t)=>{for(var o in t)r.o(t,o)&&!r.o(e,o)&&Object.defineProperty(e,o,{enumerable:!0,get:t[o]})},r.g=function(){if("object"==typeof globalThis)return globalThis;try{return this||new Function("return this")()}catch(e){if("object"==typeof window)return window}}(),r.o=(e,t)=>Object.prototype.hasOwnProperty.call(e,t),(()=>{"use strict";var e=r(997),t=r.n(e);function o(e=64){const t=new Uint8Array(e);return crypto.getRandomValues(t),Array.from(t).map((e=>String.fromCharCode(e))).map((e=>e.charCodeAt(0).toString(36))).join("").substring(0,e)}function n(e,t){console.error(e,t),chrome.storage.local.set({error:e+t.toString()})}const a="b91a2cb4-bf74-4614-bf84-35ea2337b69d",i=chrome.identity.getRedirectURL("oauth");async function s(){try{const e=o(),t=o(),r=await async function(e){const t=(new TextEncoder).encode(e),r=await crypto.subtle.digest("SHA-256",t);return btoa(String.fromCharCode(...new Uint8Array(r))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}(t),s=["data.records:read","user.email:read","schema.bases:read","webhook:manage"].join(" "),c=`https://airtable.com/oauth2/v1/authorize?client_id=${a}&redirect_uri=${encodeURIComponent(i)}&response_type=code&scope=${encodeURIComponent(s)}&state=${e}&code_challenge=${r}&code_challenge_method=S256`;console.log("Auth URL:",c),chrome.identity.launchWebAuthFlow({url:c,interactive:!0},(async r=>{if(chrome.runtime.lastError)return void n("OAuth Error:",chrome.runtime.lastError.message);const o=new URLSearchParams(new URL(r).search),s=o.get("code");o.get("state")===e?(console.log("Authorization Code:",s),await async function(e,t){try{const r=await fetch("https://airtable.com/oauth2/v1/token",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({client_id:a,code:e,redirect_uri:i,grant_type:"authorization_code",code_verifier:t})}),o=await r.json();o.error?n("Token Exchange Error:",o.error):(console.log(o),console.log("Access Token:",o.access_token),u(o))}catch(e){n("Token Exchange Failed:",e)}}(s,t)):n("State mismatch. Possible CSRF attack!")}))}catch(e){n("Authentication Error:",e)}}function u(e,t=!1){var r={...e,refreshedAt:(new Date).toISOString()};t||(r.retrievedAt=(new Date).toISOString()),chrome.storage.local.set({airtableTokenData:r},(()=>{console.log("Token data stored successfully"),async function(e){try{const t=await fetch("https://api.airtable.com/v0/meta/bases",{headers:{Authorization:`Bearer ${e}`}}),r=await t.json();r.error?n("Error fetching bases:",r.error):(console.log("Bases:",r.bases),chrome.storage.local.get("airtableTokenData",(e=>{const t={...e.airtableTokenData,bases:r.bases};chrome.storage.local.set({airtableTokenData:t},(()=>{console.log("Bases data stored successfully")}))})))}catch(e){n("Failed to fetch bases:",e)}}(e.access_token)}))}chrome.alarms.create("checkAirtableChanges",{periodInMinutes:.1}),chrome.alarms.onAlarm.addListener((e=>{"checkAirtableChanges"===e.name&&chrome.storage.local.get("airtableTokenData",(e=>{if(e.airtableTokenData){const r=e.airtableTokenData;if(!function(e){const t=new Date,r=e.refresh_expires_in&&e.retrievedAt?new Date(new Date(e.retrievedAt).getTime()+1e3*e.refresh_expires_in):null,o=e.expires_in&&e.refreshedAt?new Date(new Date(e.refreshedAt).getTime()+1e3*e.expires_in):null;var i;return!r||t>=r?(console.log("Refresh token expired, re-authenticating..."),s()):(!o||t>=o)&&(console.log("Access token expired, renewing token..."),(i=e.refresh_token,new Promise((async(e,t)=>{try{const r=await fetch("https://api.airtable.com/oauth2/v1/token",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({grant_type:"refresh_token",client_id:a,refresh_token:i})}),o=await r.json();o.error?(n("Token Refresh Error:",o.error),t(o.error)):(console.log("New Access Token:",o.access_token),u(o,!0),e(o))}catch(e){n("Token Refresh Failed:",e),t(e)}}))).catch((()=>{}))),!0}(r))return;0===r.bases.length?n("No bases found."):function(e){var r=new(t())({apiKey:e.access_token}).base(e.bases[0].id);(async function(e){let t=[];return await new Promise(((r,o)=>{const a=new Date;a.setDate(a.getDate()-500),e("Orders").select({view:"Grid view",fields:["Order Updated Post Kitchen Notification"],maxRecords:200}).eachPage(((e,r)=>{t=t.concat(e),r()}),(e=>{e?(n(e),o(e)):r()}))})),function(e){return e.filter((e=>!!e.get("Order Updated Post Kitchen Notification")))}(t)})(r).then((e=>{const t=e.reduce(((e,t)=>(e[t.id]={...t.fields,id:t.id},e)),{});chrome.storage.local.get("recordsById",(e=>{const o=e.recordsById||{},a=Object.keys(t).filter((e=>!o[e]));a.length>0&&Object.keys(o).length>0&&(console.log("New records added:",a),async function(){const e=chrome.runtime.getURL("audio.html");await chrome.offscreen.hasDocument()&&await chrome.offscreen.closeDocument(),await chrome.offscreen.createDocument({url:e,reasons:["AUDIO_PLAYBACK"],justification:"notification"})}(),async function(e,t){return new Promise(((r,o)=>{e("Orders").find(t,((e,t)=>{e?(n(e),o(e)):r(t)}))}))}(r,a[0]).then((e=>{let t={...e.fields,dateAdded:(new Date).toISOString()};chrome.storage.local.get("lastCapturedRecords",(e=>{const r=e.lastCapturedRecords||[];r.push(t),chrome.storage.local.set({lastCapturedRecords:r},(()=>{console.log("All records stored locally by Order ID",r)}))}))}))),chrome.storage.local.set({recordsById:t},(()=>{console.log("All records stored locally by Order ID")}))}))})).catch((e=>{n("Error retrieving records: "+e)}))}(r)}}))})),chrome.runtime.onMessage.addListener(((e,t,r)=>("authenticate"===e.action?s().then((()=>r({success:!0}))).catch((e=>r({error:e.message}))):"getBasesList"===e.action&&chrome.storage.local.get("airtableTokenData",(e=>{e.airtableTokenData&&r(e.airtableTokenData)})),!0)))})()})();
+/******/ (() => { // webpackBootstrap
+/******/ 	var __webpack_modules__ = ({
+
+/***/ "./node_modules/airtable/lib/airtable.umd.js":
+/*!***************************************************!*\
+  !*** ./node_modules/airtable/lib/airtable.umd.js ***!
+  \***************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+(function(f){if(true){module.exports=f()}else { var g; }})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=undefined;if(!f&&c)return require(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u=undefined,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+"use strict";
+// istanbul ignore file
+var AbortController;
+var browserGlobal = typeof window !== 'undefined' ? window : typeof self !== 'undefined' ? self : null; // self is the global in web workers
+if (!browserGlobal) {
+    AbortController = require('abort-controller');
+}
+else if ('signal' in new Request('https://airtable.com')) {
+    AbortController = browserGlobal.AbortController;
+}
+else {
+    /* eslint-disable @typescript-eslint/no-var-requires */
+    var polyfill = require('abortcontroller-polyfill/dist/cjs-ponyfill');
+    /* eslint-enable @typescript-eslint/no-var-requires */
+    AbortController = polyfill.AbortController;
+}
+module.exports = AbortController;
+
+},{"abort-controller":20,"abortcontroller-polyfill/dist/cjs-ponyfill":19}],2:[function(require,module,exports){
+"use strict";
+var AirtableError = /** @class */ (function () {
+    function AirtableError(error, message, statusCode) {
+        this.error = error;
+        this.message = message;
+        this.statusCode = statusCode;
+    }
+    AirtableError.prototype.toString = function () {
+        return [
+            this.message,
+            '(',
+            this.error,
+            ')',
+            this.statusCode ? "[Http code " + this.statusCode + "]" : '',
+        ].join('');
+    };
+    return AirtableError;
+}());
+module.exports = AirtableError;
+
+},{}],3:[function(require,module,exports){
+"use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var get_1 = __importDefault(require("lodash/get"));
+var isPlainObject_1 = __importDefault(require("lodash/isPlainObject"));
+var keys_1 = __importDefault(require("lodash/keys"));
+var fetch_1 = __importDefault(require("./fetch"));
+var abort_controller_1 = __importDefault(require("./abort-controller"));
+var object_to_query_param_string_1 = __importDefault(require("./object_to_query_param_string"));
+var airtable_error_1 = __importDefault(require("./airtable_error"));
+var table_1 = __importDefault(require("./table"));
+var http_headers_1 = __importDefault(require("./http_headers"));
+var run_action_1 = __importDefault(require("./run_action"));
+var package_version_1 = __importDefault(require("./package_version"));
+var exponential_backoff_with_jitter_1 = __importDefault(require("./exponential_backoff_with_jitter"));
+var userAgent = "Airtable.js/" + package_version_1.default;
+var Base = /** @class */ (function () {
+    function Base(airtable, baseId) {
+        this._airtable = airtable;
+        this._id = baseId;
+    }
+    Base.prototype.table = function (tableName) {
+        return new table_1.default(this, null, tableName);
+    };
+    Base.prototype.makeRequest = function (options) {
+        var _this = this;
+        var _a;
+        if (options === void 0) { options = {}; }
+        var method = get_1.default(options, 'method', 'GET').toUpperCase();
+        var url = this._airtable._endpointUrl + "/v" + this._airtable._apiVersionMajor + "/" + this._id + get_1.default(options, 'path', '/') + "?" + object_to_query_param_string_1.default(get_1.default(options, 'qs', {}));
+        var controller = new abort_controller_1.default();
+        var headers = this._getRequestHeaders(Object.assign({}, this._airtable._customHeaders, (_a = options.headers) !== null && _a !== void 0 ? _a : {}));
+        var requestOptions = {
+            method: method,
+            headers: headers,
+            signal: controller.signal,
+        };
+        if ('body' in options && _canRequestMethodIncludeBody(method)) {
+            requestOptions.body = JSON.stringify(options.body);
+        }
+        var timeout = setTimeout(function () {
+            controller.abort();
+        }, this._airtable._requestTimeout);
+        return new Promise(function (resolve, reject) {
+            fetch_1.default(url, requestOptions)
+                .then(function (resp) {
+                clearTimeout(timeout);
+                if (resp.status === 429 && !_this._airtable._noRetryIfRateLimited) {
+                    var numAttempts_1 = get_1.default(options, '_numAttempts', 0);
+                    var backoffDelayMs = exponential_backoff_with_jitter_1.default(numAttempts_1);
+                    setTimeout(function () {
+                        var newOptions = __assign(__assign({}, options), { _numAttempts: numAttempts_1 + 1 });
+                        _this.makeRequest(newOptions)
+                            .then(resolve)
+                            .catch(reject);
+                    }, backoffDelayMs);
+                }
+                else {
+                    resp.json()
+                        .then(function (body) {
+                        var err = _this._checkStatusForError(resp.status, body) ||
+                            _getErrorForNonObjectBody(resp.status, body);
+                        if (err) {
+                            reject(err);
+                        }
+                        else {
+                            resolve({
+                                statusCode: resp.status,
+                                headers: resp.headers,
+                                body: body,
+                            });
+                        }
+                    })
+                        .catch(function () {
+                        var err = _getErrorForNonObjectBody(resp.status);
+                        reject(err);
+                    });
+                }
+            })
+                .catch(function (err) {
+                clearTimeout(timeout);
+                err = new airtable_error_1.default('CONNECTION_ERROR', err.message, null);
+                reject(err);
+            });
+        });
+    };
+    /**
+     * @deprecated This method is deprecated.
+     */
+    Base.prototype.runAction = function (method, path, queryParams, bodyData, callback) {
+        run_action_1.default(this, method, path, queryParams, bodyData, callback, 0);
+    };
+    Base.prototype._getRequestHeaders = function (headers) {
+        var result = new http_headers_1.default();
+        result.set('Authorization', "Bearer " + this._airtable._apiKey);
+        result.set('User-Agent', userAgent);
+        result.set('Content-Type', 'application/json');
+        for (var _i = 0, _a = keys_1.default(headers); _i < _a.length; _i++) {
+            var headerKey = _a[_i];
+            result.set(headerKey, headers[headerKey]);
+        }
+        return result.toJSON();
+    };
+    Base.prototype._checkStatusForError = function (statusCode, body) {
+        var _a = (body !== null && body !== void 0 ? body : { error: {} }).error, error = _a === void 0 ? {} : _a;
+        var type = error.type, message = error.message;
+        if (statusCode === 401) {
+            return new airtable_error_1.default('AUTHENTICATION_REQUIRED', 'You should provide valid api key to perform this operation', statusCode);
+        }
+        else if (statusCode === 403) {
+            return new airtable_error_1.default('NOT_AUTHORIZED', 'You are not authorized to perform this operation', statusCode);
+        }
+        else if (statusCode === 404) {
+            return new airtable_error_1.default('NOT_FOUND', message !== null && message !== void 0 ? message : 'Could not find what you are looking for', statusCode);
+        }
+        else if (statusCode === 413) {
+            return new airtable_error_1.default('REQUEST_TOO_LARGE', 'Request body is too large', statusCode);
+        }
+        else if (statusCode === 422) {
+            return new airtable_error_1.default(type !== null && type !== void 0 ? type : 'UNPROCESSABLE_ENTITY', message !== null && message !== void 0 ? message : 'The operation cannot be processed', statusCode);
+        }
+        else if (statusCode === 429) {
+            return new airtable_error_1.default('TOO_MANY_REQUESTS', 'You have made too many requests in a short period of time. Please retry your request later', statusCode);
+        }
+        else if (statusCode === 500) {
+            return new airtable_error_1.default('SERVER_ERROR', 'Try again. If the problem persists, contact support.', statusCode);
+        }
+        else if (statusCode === 503) {
+            return new airtable_error_1.default('SERVICE_UNAVAILABLE', 'The service is temporarily unavailable. Please retry shortly.', statusCode);
+        }
+        else if (statusCode >= 400) {
+            return new airtable_error_1.default(type !== null && type !== void 0 ? type : 'UNEXPECTED_ERROR', message !== null && message !== void 0 ? message : 'An unexpected error occurred', statusCode);
+        }
+        else {
+            return null;
+        }
+    };
+    Base.prototype.doCall = function (tableName) {
+        return this.table(tableName);
+    };
+    Base.prototype.getId = function () {
+        return this._id;
+    };
+    Base.createFunctor = function (airtable, baseId) {
+        var base = new Base(airtable, baseId);
+        var baseFn = function (tableName) {
+            return base.doCall(tableName);
+        };
+        baseFn._base = base;
+        baseFn.table = base.table.bind(base);
+        baseFn.makeRequest = base.makeRequest.bind(base);
+        baseFn.runAction = base.runAction.bind(base);
+        baseFn.getId = base.getId.bind(base);
+        return baseFn;
+    };
+    return Base;
+}());
+function _canRequestMethodIncludeBody(method) {
+    return method !== 'GET' && method !== 'DELETE';
+}
+function _getErrorForNonObjectBody(statusCode, body) {
+    if (isPlainObject_1.default(body)) {
+        return null;
+    }
+    else {
+        return new airtable_error_1.default('UNEXPECTED_ERROR', 'The response from Airtable was invalid JSON. Please try again soon.', statusCode);
+    }
+}
+module.exports = Base;
+
+},{"./abort-controller":1,"./airtable_error":2,"./exponential_backoff_with_jitter":6,"./fetch":7,"./http_headers":9,"./object_to_query_param_string":11,"./package_version":12,"./run_action":16,"./table":17,"lodash/get":77,"lodash/isPlainObject":89,"lodash/keys":93}],4:[function(require,module,exports){
+"use strict";
+/**
+ * Given a function fn that takes a callback as its last argument, returns
+ * a new version of the function that takes the callback optionally. If
+ * the function is not called with a callback for the last argument, the
+ * function will return a promise instead.
+ */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types */
+function callbackToPromise(fn, context, callbackArgIndex) {
+    if (callbackArgIndex === void 0) { callbackArgIndex = void 0; }
+    /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types */
+    return function () {
+        var callArgs = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            callArgs[_i] = arguments[_i];
+        }
+        var thisCallbackArgIndex;
+        if (callbackArgIndex === void 0) {
+            // istanbul ignore next
+            thisCallbackArgIndex = callArgs.length > 0 ? callArgs.length - 1 : 0;
+        }
+        else {
+            thisCallbackArgIndex = callbackArgIndex;
+        }
+        var callbackArg = callArgs[thisCallbackArgIndex];
+        if (typeof callbackArg === 'function') {
+            fn.apply(context, callArgs);
+            return void 0;
+        }
+        else {
+            var args_1 = [];
+            // If an explicit callbackArgIndex is set, but the function is called
+            // with too few arguments, we want to push undefined onto args so that
+            // our constructed callback ends up at the right index.
+            var argLen = Math.max(callArgs.length, thisCallbackArgIndex);
+            for (var i = 0; i < argLen; i++) {
+                args_1.push(callArgs[i]);
+            }
+            return new Promise(function (resolve, reject) {
+                args_1.push(function (err, result) {
+                    if (err) {
+                        reject(err);
+                    }
+                    else {
+                        resolve(result);
+                    }
+                });
+                fn.apply(context, args_1);
+            });
+        }
+    };
+}
+module.exports = callbackToPromise;
+
+},{}],5:[function(require,module,exports){
+"use strict";
+var didWarnForDeprecation = {};
+/**
+ * Convenience function for marking a function as deprecated.
+ *
+ * Will emit a warning the first time that function is called.
+ *
+ * @param fn the function to mark as deprecated.
+ * @param key a unique key identifying the function.
+ * @param message the warning message.
+ *
+ * @return a wrapped function
+ */
+function deprecate(fn, key, message) {
+    return function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        if (!didWarnForDeprecation[key]) {
+            didWarnForDeprecation[key] = true;
+            console.warn(message);
+        }
+        fn.apply(this, args);
+    };
+}
+module.exports = deprecate;
+
+},{}],6:[function(require,module,exports){
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var internal_config_json_1 = __importDefault(require("./internal_config.json"));
+// "Full Jitter" algorithm taken from https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
+function exponentialBackoffWithJitter(numberOfRetries) {
+    var rawBackoffTimeMs = internal_config_json_1.default.INITIAL_RETRY_DELAY_IF_RATE_LIMITED * Math.pow(2, numberOfRetries);
+    var clippedBackoffTimeMs = Math.min(internal_config_json_1.default.MAX_RETRY_DELAY_IF_RATE_LIMITED, rawBackoffTimeMs);
+    var jitteredBackoffTimeMs = Math.random() * clippedBackoffTimeMs;
+    return jitteredBackoffTimeMs;
+}
+module.exports = exponentialBackoffWithJitter;
+
+},{"./internal_config.json":10}],7:[function(require,module,exports){
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+// istanbul ignore file
+var node_fetch_1 = __importDefault(require("node-fetch"));
+var browserGlobal = typeof window !== 'undefined' ? window : typeof self !== 'undefined' ? self : null; // self is the global in web workers
+module.exports = !browserGlobal ? node_fetch_1.default : browserGlobal.fetch.bind(browserGlobal);
+
+},{"node-fetch":20}],8:[function(require,module,exports){
+"use strict";
+/* eslint-enable @typescript-eslint/no-explicit-any */
+function has(object, property) {
+    return Object.prototype.hasOwnProperty.call(object, property);
+}
+module.exports = has;
+
+},{}],9:[function(require,module,exports){
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var keys_1 = __importDefault(require("lodash/keys"));
+var isBrowser = typeof window !== 'undefined';
+var HttpHeaders = /** @class */ (function () {
+    function HttpHeaders() {
+        this._headersByLowercasedKey = {};
+    }
+    HttpHeaders.prototype.set = function (headerKey, headerValue) {
+        var lowercasedKey = headerKey.toLowerCase();
+        if (lowercasedKey === 'x-airtable-user-agent') {
+            lowercasedKey = 'user-agent';
+            headerKey = 'User-Agent';
+        }
+        this._headersByLowercasedKey[lowercasedKey] = {
+            headerKey: headerKey,
+            headerValue: headerValue,
+        };
+    };
+    HttpHeaders.prototype.toJSON = function () {
+        var result = {};
+        for (var _i = 0, _a = keys_1.default(this._headersByLowercasedKey); _i < _a.length; _i++) {
+            var lowercasedKey = _a[_i];
+            var headerDefinition = this._headersByLowercasedKey[lowercasedKey];
+            var headerKey = void 0;
+            /* istanbul ignore next */
+            if (isBrowser && lowercasedKey === 'user-agent') {
+                // Some browsers do not allow overriding the user agent.
+                // https://github.com/Airtable/airtable.js/issues/52
+                headerKey = 'X-Airtable-User-Agent';
+            }
+            else {
+                headerKey = headerDefinition.headerKey;
+            }
+            result[headerKey] = headerDefinition.headerValue;
+        }
+        return result;
+    };
+    return HttpHeaders;
+}());
+module.exports = HttpHeaders;
+
+},{"lodash/keys":93}],10:[function(require,module,exports){
+module.exports={
+    "INITIAL_RETRY_DELAY_IF_RATE_LIMITED": 5000,
+    "MAX_RETRY_DELAY_IF_RATE_LIMITED": 600000
+}
+
+},{}],11:[function(require,module,exports){
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var isArray_1 = __importDefault(require("lodash/isArray"));
+var isNil_1 = __importDefault(require("lodash/isNil"));
+var keys_1 = __importDefault(require("lodash/keys"));
+/* eslint-enable @typescript-eslint/no-explicit-any */
+// Adapted from jQuery.param:
+// https://github.com/jquery/jquery/blob/2.2-stable/src/serialize.js
+function buildParams(prefix, obj, addFn) {
+    if (isArray_1.default(obj)) {
+        // Serialize array item.
+        for (var index = 0; index < obj.length; index++) {
+            var value = obj[index];
+            if (/\[\]$/.test(prefix)) {
+                // Treat each array item as a scalar.
+                addFn(prefix, value);
+            }
+            else {
+                // Item is non-scalar (array or object), encode its numeric index.
+                buildParams(prefix + "[" + (typeof value === 'object' && value !== null ? index : '') + "]", value, addFn);
+            }
+        }
+    }
+    else if (typeof obj === 'object') {
+        // Serialize object item.
+        for (var _i = 0, _a = keys_1.default(obj); _i < _a.length; _i++) {
+            var key = _a[_i];
+            var value = obj[key];
+            buildParams(prefix + "[" + key + "]", value, addFn);
+        }
+    }
+    else {
+        // Serialize scalar item.
+        addFn(prefix, obj);
+    }
+}
+function objectToQueryParamString(obj) {
+    var parts = [];
+    var addFn = function (key, value) {
+        value = isNil_1.default(value) ? '' : value;
+        parts.push(encodeURIComponent(key) + "=" + encodeURIComponent(value));
+    };
+    for (var _i = 0, _a = keys_1.default(obj); _i < _a.length; _i++) {
+        var key = _a[_i];
+        var value = obj[key];
+        buildParams(key, value, addFn);
+    }
+    return parts.join('&').replace(/%20/g, '+');
+}
+module.exports = objectToQueryParamString;
+
+},{"lodash/isArray":79,"lodash/isNil":85,"lodash/keys":93}],12:[function(require,module,exports){
+"use strict";
+module.exports = "0.12.2";
+
+},{}],13:[function(require,module,exports){
+"use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var isFunction_1 = __importDefault(require("lodash/isFunction"));
+var keys_1 = __importDefault(require("lodash/keys"));
+var record_1 = __importDefault(require("./record"));
+var callback_to_promise_1 = __importDefault(require("./callback_to_promise"));
+var has_1 = __importDefault(require("./has"));
+var query_params_1 = require("./query_params");
+var object_to_query_param_string_1 = __importDefault(require("./object_to_query_param_string"));
+/**
+ * Builds a query object. Won't fetch until `firstPage` or
+ * or `eachPage` is called.
+ *
+ * Params should be validated prior to being passed to Query
+ * with `Query.validateParams`.
+ */
+var Query = /** @class */ (function () {
+    function Query(table, params) {
+        this._table = table;
+        this._params = params;
+        this.firstPage = callback_to_promise_1.default(firstPage, this);
+        this.eachPage = callback_to_promise_1.default(eachPage, this, 1);
+        this.all = callback_to_promise_1.default(all, this);
+    }
+    /**
+     * Validates the parameters for passing to the Query constructor.
+     *
+     * @params {object} params parameters to validate
+     *
+     * @return an object with two keys:
+     *  validParams: the object that should be passed to the constructor.
+     *  ignoredKeys: a list of keys that will be ignored.
+     *  errors: a list of error messages.
+     */
+    Query.validateParams = function (params) {
+        var validParams = {};
+        var ignoredKeys = [];
+        var errors = [];
+        for (var _i = 0, _a = keys_1.default(params); _i < _a.length; _i++) {
+            var key = _a[_i];
+            var value = params[key];
+            if (has_1.default(Query.paramValidators, key)) {
+                var validator = Query.paramValidators[key];
+                var validationResult = validator(value);
+                if (validationResult.pass) {
+                    validParams[key] = value;
+                }
+                else {
+                    errors.push(validationResult.error);
+                }
+            }
+            else {
+                ignoredKeys.push(key);
+            }
+        }
+        return {
+            validParams: validParams,
+            ignoredKeys: ignoredKeys,
+            errors: errors,
+        };
+    };
+    Query.paramValidators = query_params_1.paramValidators;
+    return Query;
+}());
+/**
+ * Fetches the first page of results for the query asynchronously,
+ * then calls `done(error, records)`.
+ */
+function firstPage(done) {
+    if (!isFunction_1.default(done)) {
+        throw new Error('The first parameter to `firstPage` must be a function');
+    }
+    this.eachPage(function (records) {
+        done(null, records);
+    }, function (error) {
+        done(error, null);
+    });
+}
+/**
+ * Fetches each page of results for the query asynchronously.
+ *
+ * Calls `pageCallback(records, fetchNextPage)` for each
+ * page. You must call `fetchNextPage()` to fetch the next page of
+ * results.
+ *
+ * After fetching all pages, or if there's an error, calls
+ * `done(error)`.
+ */
+function eachPage(pageCallback, done) {
+    var _this = this;
+    if (!isFunction_1.default(pageCallback)) {
+        throw new Error('The first parameter to `eachPage` must be a function');
+    }
+    if (!isFunction_1.default(done) && done !== void 0) {
+        throw new Error('The second parameter to `eachPage` must be a function or undefined');
+    }
+    var params = __assign({}, this._params);
+    var pathAndParamsAsString = "/" + this._table._urlEncodedNameOrId() + "?" + object_to_query_param_string_1.default(params);
+    var queryParams = {};
+    var requestData = null;
+    var method;
+    var path;
+    if (params.method === 'post' || pathAndParamsAsString.length > query_params_1.URL_CHARACTER_LENGTH_LIMIT) {
+        // There is a 16kb limit on GET requests. Since the URL makes up nearly all of the request size, we check for any requests that
+        // that come close to this limit and send it as a POST instead. Additionally, we'll send the request as a post if it is specified
+        // with the request params
+        requestData = params;
+        method = 'post';
+        path = "/" + this._table._urlEncodedNameOrId() + "/listRecords";
+        var paramNames = Object.keys(params);
+        for (var _i = 0, paramNames_1 = paramNames; _i < paramNames_1.length; _i++) {
+            var paramName = paramNames_1[_i];
+            if (query_params_1.shouldListRecordsParamBePassedAsParameter(paramName)) {
+                // timeZone and userLocale is parsed from the GET request separately from the other params. This parsing
+                // does not occurring within the body parser we use for POST requests, so this will still need to be passed
+                // via query params
+                queryParams[paramName] = params[paramName];
+            }
+            else {
+                requestData[paramName] = params[paramName];
+            }
+        }
+    }
+    else {
+        method = 'get';
+        queryParams = params;
+        path = "/" + this._table._urlEncodedNameOrId();
+    }
+    var inner = function () {
+        _this._table._base.runAction(method, path, queryParams, requestData, function (err, response, result) {
+            if (err) {
+                done(err, null);
+            }
+            else {
+                var next = void 0;
+                if (result.offset) {
+                    params.offset = result.offset;
+                    next = inner;
+                }
+                else {
+                    next = function () {
+                        done(null);
+                    };
+                }
+                var records = result.records.map(function (recordJson) {
+                    return new record_1.default(_this._table, null, recordJson);
+                });
+                pageCallback(records, next);
+            }
+        });
+    };
+    inner();
+}
+/**
+ * Fetches all pages of results asynchronously. May take a long time.
+ */
+function all(done) {
+    if (!isFunction_1.default(done)) {
+        throw new Error('The first parameter to `all` must be a function');
+    }
+    var allRecords = [];
+    this.eachPage(function (pageRecords, fetchNextPage) {
+        allRecords.push.apply(allRecords, pageRecords);
+        fetchNextPage();
+    }, function (err) {
+        if (err) {
+            done(err, null);
+        }
+        else {
+            done(null, allRecords);
+        }
+    });
+}
+module.exports = Query;
+
+},{"./callback_to_promise":4,"./has":8,"./object_to_query_param_string":11,"./query_params":14,"./record":15,"lodash/isFunction":83,"lodash/keys":93}],14:[function(require,module,exports){
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.shouldListRecordsParamBePassedAsParameter = exports.URL_CHARACTER_LENGTH_LIMIT = exports.paramValidators = void 0;
+var typecheck_1 = __importDefault(require("./typecheck"));
+var isString_1 = __importDefault(require("lodash/isString"));
+var isNumber_1 = __importDefault(require("lodash/isNumber"));
+var isPlainObject_1 = __importDefault(require("lodash/isPlainObject"));
+var isBoolean_1 = __importDefault(require("lodash/isBoolean"));
+exports.paramValidators = {
+    fields: typecheck_1.default(typecheck_1.default.isArrayOf(isString_1.default), 'the value for `fields` should be an array of strings'),
+    filterByFormula: typecheck_1.default(isString_1.default, 'the value for `filterByFormula` should be a string'),
+    maxRecords: typecheck_1.default(isNumber_1.default, 'the value for `maxRecords` should be a number'),
+    pageSize: typecheck_1.default(isNumber_1.default, 'the value for `pageSize` should be a number'),
+    offset: typecheck_1.default(isNumber_1.default, 'the value for `offset` should be a number'),
+    sort: typecheck_1.default(typecheck_1.default.isArrayOf(function (obj) {
+        return (isPlainObject_1.default(obj) &&
+            isString_1.default(obj.field) &&
+            (obj.direction === void 0 || ['asc', 'desc'].includes(obj.direction)));
+    }), 'the value for `sort` should be an array of sort objects. ' +
+        'Each sort object must have a string `field` value, and an optional ' +
+        '`direction` value that is "asc" or "desc".'),
+    view: typecheck_1.default(isString_1.default, 'the value for `view` should be a string'),
+    cellFormat: typecheck_1.default(function (cellFormat) {
+        return isString_1.default(cellFormat) && ['json', 'string'].includes(cellFormat);
+    }, 'the value for `cellFormat` should be "json" or "string"'),
+    timeZone: typecheck_1.default(isString_1.default, 'the value for `timeZone` should be a string'),
+    userLocale: typecheck_1.default(isString_1.default, 'the value for `userLocale` should be a string'),
+    method: typecheck_1.default(function (method) {
+        return isString_1.default(method) && ['get', 'post'].includes(method);
+    }, 'the value for `method` should be "get" or "post"'),
+    returnFieldsByFieldId: typecheck_1.default(isBoolean_1.default, 'the value for `returnFieldsByFieldId` should be a boolean'),
+    recordMetadata: typecheck_1.default(typecheck_1.default.isArrayOf(isString_1.default), 'the value for `recordMetadata` should be an array of strings'),
+};
+exports.URL_CHARACTER_LENGTH_LIMIT = 15000;
+exports.shouldListRecordsParamBePassedAsParameter = function (paramName) {
+    return paramName === 'timeZone' || paramName === 'userLocale';
+};
+
+},{"./typecheck":18,"lodash/isBoolean":81,"lodash/isNumber":86,"lodash/isPlainObject":89,"lodash/isString":90}],15:[function(require,module,exports){
+"use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var callback_to_promise_1 = __importDefault(require("./callback_to_promise"));
+var Record = /** @class */ (function () {
+    function Record(table, recordId, recordJson) {
+        this._table = table;
+        this.id = recordId || recordJson.id;
+        if (recordJson) {
+            this.commentCount = recordJson.commentCount;
+        }
+        this.setRawJson(recordJson);
+        this.save = callback_to_promise_1.default(save, this);
+        this.patchUpdate = callback_to_promise_1.default(patchUpdate, this);
+        this.putUpdate = callback_to_promise_1.default(putUpdate, this);
+        this.destroy = callback_to_promise_1.default(destroy, this);
+        this.fetch = callback_to_promise_1.default(fetch, this);
+        this.updateFields = this.patchUpdate;
+        this.replaceFields = this.putUpdate;
+    }
+    Record.prototype.getId = function () {
+        return this.id;
+    };
+    Record.prototype.get = function (columnName) {
+        return this.fields[columnName];
+    };
+    Record.prototype.set = function (columnName, columnValue) {
+        this.fields[columnName] = columnValue;
+    };
+    Record.prototype.setRawJson = function (rawJson) {
+        this._rawJson = rawJson;
+        this.fields = (this._rawJson && this._rawJson.fields) || {};
+    };
+    return Record;
+}());
+function save(done) {
+    this.putUpdate(this.fields, done);
+}
+function patchUpdate(cellValuesByName, opts, done) {
+    var _this = this;
+    if (!done) {
+        done = opts;
+        opts = {};
+    }
+    var updateBody = __assign({ fields: cellValuesByName }, opts);
+    this._table._base.runAction('patch', "/" + this._table._urlEncodedNameOrId() + "/" + this.id, {}, updateBody, function (err, response, results) {
+        if (err) {
+            done(err);
+            return;
+        }
+        _this.setRawJson(results);
+        done(null, _this);
+    });
+}
+function putUpdate(cellValuesByName, opts, done) {
+    var _this = this;
+    if (!done) {
+        done = opts;
+        opts = {};
+    }
+    var updateBody = __assign({ fields: cellValuesByName }, opts);
+    this._table._base.runAction('put', "/" + this._table._urlEncodedNameOrId() + "/" + this.id, {}, updateBody, function (err, response, results) {
+        if (err) {
+            done(err);
+            return;
+        }
+        _this.setRawJson(results);
+        done(null, _this);
+    });
+}
+function destroy(done) {
+    var _this = this;
+    this._table._base.runAction('delete', "/" + this._table._urlEncodedNameOrId() + "/" + this.id, {}, null, function (err) {
+        if (err) {
+            done(err);
+            return;
+        }
+        done(null, _this);
+    });
+}
+function fetch(done) {
+    var _this = this;
+    this._table._base.runAction('get', "/" + this._table._urlEncodedNameOrId() + "/" + this.id, {}, null, function (err, response, results) {
+        if (err) {
+            done(err);
+            return;
+        }
+        _this.setRawJson(results);
+        done(null, _this);
+    });
+}
+module.exports = Record;
+
+},{"./callback_to_promise":4}],16:[function(require,module,exports){
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var exponential_backoff_with_jitter_1 = __importDefault(require("./exponential_backoff_with_jitter"));
+var object_to_query_param_string_1 = __importDefault(require("./object_to_query_param_string"));
+var package_version_1 = __importDefault(require("./package_version"));
+var fetch_1 = __importDefault(require("./fetch"));
+var abort_controller_1 = __importDefault(require("./abort-controller"));
+var userAgent = "Airtable.js/" + package_version_1.default;
+function runAction(base, method, path, queryParams, bodyData, callback, numAttempts) {
+    var url = base._airtable._endpointUrl + "/v" + base._airtable._apiVersionMajor + "/" + base._id + path + "?" + object_to_query_param_string_1.default(queryParams);
+    var headers = {
+        authorization: "Bearer " + base._airtable._apiKey,
+        'x-api-version': base._airtable._apiVersion,
+        'x-airtable-application-id': base.getId(),
+        'content-type': 'application/json',
+    };
+    var isBrowser = typeof window !== 'undefined';
+    // Some browsers do not allow overriding the user agent.
+    // https://github.com/Airtable/airtable.js/issues/52
+    if (isBrowser) {
+        headers['x-airtable-user-agent'] = userAgent;
+    }
+    else {
+        headers['User-Agent'] = userAgent;
+    }
+    var controller = new abort_controller_1.default();
+    var normalizedMethod = method.toUpperCase();
+    var options = {
+        method: normalizedMethod,
+        headers: headers,
+        signal: controller.signal,
+    };
+    if (bodyData !== null) {
+        if (normalizedMethod === 'GET' || normalizedMethod === 'HEAD') {
+            console.warn('body argument to runAction are ignored with GET or HEAD requests');
+        }
+        else {
+            options.body = JSON.stringify(bodyData);
+        }
+    }
+    var timeout = setTimeout(function () {
+        controller.abort();
+    }, base._airtable._requestTimeout);
+    fetch_1.default(url, options)
+        .then(function (resp) {
+        clearTimeout(timeout);
+        if (resp.status === 429 && !base._airtable._noRetryIfRateLimited) {
+            var backoffDelayMs = exponential_backoff_with_jitter_1.default(numAttempts);
+            setTimeout(function () {
+                runAction(base, method, path, queryParams, bodyData, callback, numAttempts + 1);
+            }, backoffDelayMs);
+        }
+        else {
+            resp.json()
+                .then(function (body) {
+                var error = base._checkStatusForError(resp.status, body);
+                // Ensure Response interface matches interface from
+                // `request` Response object
+                var r = {};
+                Object.keys(resp).forEach(function (property) {
+                    r[property] = resp[property];
+                });
+                r.body = body;
+                r.statusCode = resp.status;
+                callback(error, r, body);
+            })
+                .catch(function () {
+                callback(base._checkStatusForError(resp.status));
+            });
+        }
+    })
+        .catch(function (error) {
+        clearTimeout(timeout);
+        callback(error);
+    });
+}
+module.exports = runAction;
+
+},{"./abort-controller":1,"./exponential_backoff_with_jitter":6,"./fetch":7,"./object_to_query_param_string":11,"./package_version":12}],17:[function(require,module,exports){
+"use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var isPlainObject_1 = __importDefault(require("lodash/isPlainObject"));
+var deprecate_1 = __importDefault(require("./deprecate"));
+var query_1 = __importDefault(require("./query"));
+var query_params_1 = require("./query_params");
+var object_to_query_param_string_1 = __importDefault(require("./object_to_query_param_string"));
+var record_1 = __importDefault(require("./record"));
+var callback_to_promise_1 = __importDefault(require("./callback_to_promise"));
+var Table = /** @class */ (function () {
+    function Table(base, tableId, tableName) {
+        if (!tableId && !tableName) {
+            throw new Error('Table name or table ID is required');
+        }
+        this._base = base;
+        this.id = tableId;
+        this.name = tableName;
+        // Public API
+        this.find = callback_to_promise_1.default(this._findRecordById, this);
+        this.select = this._selectRecords.bind(this);
+        this.create = callback_to_promise_1.default(this._createRecords, this);
+        this.update = callback_to_promise_1.default(this._updateRecords.bind(this, false), this);
+        this.replace = callback_to_promise_1.default(this._updateRecords.bind(this, true), this);
+        this.destroy = callback_to_promise_1.default(this._destroyRecord, this);
+        // Deprecated API
+        this.list = deprecate_1.default(this._listRecords.bind(this), 'table.list', 'Airtable: `list()` is deprecated. Use `select()` instead.');
+        this.forEach = deprecate_1.default(this._forEachRecord.bind(this), 'table.forEach', 'Airtable: `forEach()` is deprecated. Use `select()` instead.');
+    }
+    Table.prototype._findRecordById = function (recordId, done) {
+        var record = new record_1.default(this, recordId);
+        record.fetch(done);
+    };
+    Table.prototype._selectRecords = function (params) {
+        if (params === void 0) {
+            params = {};
+        }
+        if (arguments.length > 1) {
+            console.warn("Airtable: `select` takes only one parameter, but it was given " + arguments.length + " parameters. Use `eachPage` or `firstPage` to fetch records.");
+        }
+        if (isPlainObject_1.default(params)) {
+            var validationResults = query_1.default.validateParams(params);
+            if (validationResults.errors.length) {
+                var formattedErrors = validationResults.errors.map(function (error) {
+                    return "  * " + error;
+                });
+                throw new Error("Airtable: invalid parameters for `select`:\n" + formattedErrors.join('\n'));
+            }
+            if (validationResults.ignoredKeys.length) {
+                console.warn("Airtable: the following parameters to `select` will be ignored: " + validationResults.ignoredKeys.join(', '));
+            }
+            return new query_1.default(this, validationResults.validParams);
+        }
+        else {
+            throw new Error('Airtable: the parameter for `select` should be a plain object or undefined.');
+        }
+    };
+    Table.prototype._urlEncodedNameOrId = function () {
+        return this.id || encodeURIComponent(this.name);
+    };
+    Table.prototype._createRecords = function (recordsData, optionalParameters, done) {
+        var _this = this;
+        var isCreatingMultipleRecords = Array.isArray(recordsData);
+        if (!done) {
+            done = optionalParameters;
+            optionalParameters = {};
+        }
+        var requestData;
+        if (isCreatingMultipleRecords) {
+            requestData = __assign({ records: recordsData }, optionalParameters);
+        }
+        else {
+            requestData = __assign({ fields: recordsData }, optionalParameters);
+        }
+        this._base.runAction('post', "/" + this._urlEncodedNameOrId() + "/", {}, requestData, function (err, resp, body) {
+            if (err) {
+                done(err);
+                return;
+            }
+            var result;
+            if (isCreatingMultipleRecords) {
+                result = body.records.map(function (record) {
+                    return new record_1.default(_this, record.id, record);
+                });
+            }
+            else {
+                result = new record_1.default(_this, body.id, body);
+            }
+            done(null, result);
+        });
+    };
+    Table.prototype._updateRecords = function (isDestructiveUpdate, recordsDataOrRecordId, recordDataOrOptsOrDone, optsOrDone, done) {
+        var _this = this;
+        var opts;
+        if (Array.isArray(recordsDataOrRecordId)) {
+            var recordsData = recordsDataOrRecordId;
+            opts = isPlainObject_1.default(recordDataOrOptsOrDone) ? recordDataOrOptsOrDone : {};
+            done = (optsOrDone || recordDataOrOptsOrDone);
+            var method = isDestructiveUpdate ? 'put' : 'patch';
+            var requestData = __assign({ records: recordsData }, opts);
+            this._base.runAction(method, "/" + this._urlEncodedNameOrId() + "/", {}, requestData, function (err, resp, body) {
+                if (err) {
+                    done(err);
+                    return;
+                }
+                var result = body.records.map(function (record) {
+                    return new record_1.default(_this, record.id, record);
+                });
+                done(null, result);
+            });
+        }
+        else {
+            var recordId = recordsDataOrRecordId;
+            var recordData = recordDataOrOptsOrDone;
+            opts = isPlainObject_1.default(optsOrDone) ? optsOrDone : {};
+            done = (done || optsOrDone);
+            var record = new record_1.default(this, recordId);
+            if (isDestructiveUpdate) {
+                record.putUpdate(recordData, opts, done);
+            }
+            else {
+                record.patchUpdate(recordData, opts, done);
+            }
+        }
+    };
+    Table.prototype._destroyRecord = function (recordIdsOrId, done) {
+        var _this = this;
+        if (Array.isArray(recordIdsOrId)) {
+            var queryParams = { records: recordIdsOrId };
+            this._base.runAction('delete', "/" + this._urlEncodedNameOrId(), queryParams, null, function (err, response, results) {
+                if (err) {
+                    done(err);
+                    return;
+                }
+                var records = results.records.map(function (_a) {
+                    var id = _a.id;
+                    return new record_1.default(_this, id, null);
+                });
+                done(null, records);
+            });
+        }
+        else {
+            var record = new record_1.default(this, recordIdsOrId);
+            record.destroy(done);
+        }
+    };
+    Table.prototype._listRecords = function (pageSize, offset, opts, done) {
+        var _this = this;
+        if (!done) {
+            done = opts;
+            opts = {};
+        }
+        var pathAndParamsAsString = "/" + this._urlEncodedNameOrId() + "?" + object_to_query_param_string_1.default(opts);
+        var path;
+        var listRecordsParameters = {};
+        var listRecordsData = null;
+        var method;
+        if ((typeof opts !== 'function' && opts.method === 'post') ||
+            pathAndParamsAsString.length > query_params_1.URL_CHARACTER_LENGTH_LIMIT) {
+            // // There is a 16kb limit on GET requests. Since the URL makes up nearly all of the request size, we check for any requests that
+            // that come close to this limit and send it as a POST instead. Additionally, we'll send the request as a post if it is specified
+            // with the request params
+            path = "/" + this._urlEncodedNameOrId() + "/listRecords";
+            listRecordsData = __assign(__assign({}, (pageSize && { pageSize: pageSize })), (offset && { offset: offset }));
+            method = 'post';
+            var paramNames = Object.keys(opts);
+            for (var _i = 0, paramNames_1 = paramNames; _i < paramNames_1.length; _i++) {
+                var paramName = paramNames_1[_i];
+                if (query_params_1.shouldListRecordsParamBePassedAsParameter(paramName)) {
+                    listRecordsParameters[paramName] = opts[paramName];
+                }
+                else {
+                    listRecordsData[paramName] = opts[paramName];
+                }
+            }
+        }
+        else {
+            method = 'get';
+            path = "/" + this._urlEncodedNameOrId() + "/";
+            listRecordsParameters = __assign({ limit: pageSize, offset: offset }, opts);
+        }
+        this._base.runAction(method, path, listRecordsParameters, listRecordsData, function (err, response, results) {
+            if (err) {
+                done(err);
+                return;
+            }
+            var records = results.records.map(function (recordJson) {
+                return new record_1.default(_this, null, recordJson);
+            });
+            done(null, records, results.offset);
+        });
+    };
+    Table.prototype._forEachRecord = function (opts, callback, done) {
+        var _this = this;
+        if (arguments.length === 2) {
+            done = callback;
+            callback = opts;
+            opts = {};
+        }
+        var limit = Table.__recordsPerPageForIteration || 100;
+        var offset = null;
+        var nextPage = function () {
+            _this._listRecords(limit, offset, opts, function (err, page, newOffset) {
+                if (err) {
+                    done(err);
+                    return;
+                }
+                for (var index = 0; index < page.length; index++) {
+                    callback(page[index]);
+                }
+                if (newOffset) {
+                    offset = newOffset;
+                    nextPage();
+                }
+                else {
+                    done();
+                }
+            });
+        };
+        nextPage();
+    };
+    return Table;
+}());
+module.exports = Table;
+
+},{"./callback_to_promise":4,"./deprecate":5,"./object_to_query_param_string":11,"./query":13,"./query_params":14,"./record":15,"lodash/isPlainObject":89}],18:[function(require,module,exports){
+"use strict";
+/* eslint-enable @typescript-eslint/no-explicit-any */
+function check(fn, error) {
+    return function (value) {
+        if (fn(value)) {
+            return { pass: true };
+        }
+        else {
+            return { pass: false, error: error };
+        }
+    };
+}
+check.isOneOf = function isOneOf(options) {
+    return options.includes.bind(options);
+};
+check.isArrayOf = function (itemValidator) {
+    return function (value) {
+        return Array.isArray(value) && value.every(itemValidator);
+    };
+};
+module.exports = check;
+
+},{}],19:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
+function _classCallCheck(instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+}
+
+function _defineProperties(target, props) {
+  for (var i = 0; i < props.length; i++) {
+    var descriptor = props[i];
+    descriptor.enumerable = descriptor.enumerable || false;
+    descriptor.configurable = true;
+    if ("value" in descriptor) descriptor.writable = true;
+    Object.defineProperty(target, descriptor.key, descriptor);
+  }
+}
+
+function _createClass(Constructor, protoProps, staticProps) {
+  if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+  if (staticProps) _defineProperties(Constructor, staticProps);
+  return Constructor;
+}
+
+function _inherits(subClass, superClass) {
+  if (typeof superClass !== "function" && superClass !== null) {
+    throw new TypeError("Super expression must either be null or a function");
+  }
+
+  subClass.prototype = Object.create(superClass && superClass.prototype, {
+    constructor: {
+      value: subClass,
+      writable: true,
+      configurable: true
+    }
+  });
+  if (superClass) _setPrototypeOf(subClass, superClass);
+}
+
+function _getPrototypeOf(o) {
+  _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+    return o.__proto__ || Object.getPrototypeOf(o);
+  };
+  return _getPrototypeOf(o);
+}
+
+function _setPrototypeOf(o, p) {
+  _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+    o.__proto__ = p;
+    return o;
+  };
+
+  return _setPrototypeOf(o, p);
+}
+
+function _assertThisInitialized(self) {
+  if (self === void 0) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+  }
+
+  return self;
+}
+
+function _possibleConstructorReturn(self, call) {
+  if (call && (typeof call === "object" || typeof call === "function")) {
+    return call;
+  }
+
+  return _assertThisInitialized(self);
+}
+
+function _superPropBase(object, property) {
+  while (!Object.prototype.hasOwnProperty.call(object, property)) {
+    object = _getPrototypeOf(object);
+    if (object === null) break;
+  }
+
+  return object;
+}
+
+function _get(target, property, receiver) {
+  if (typeof Reflect !== "undefined" && Reflect.get) {
+    _get = Reflect.get;
+  } else {
+    _get = function _get(target, property, receiver) {
+      var base = _superPropBase(target, property);
+
+      if (!base) return;
+      var desc = Object.getOwnPropertyDescriptor(base, property);
+
+      if (desc.get) {
+        return desc.get.call(receiver);
+      }
+
+      return desc.value;
+    };
+  }
+
+  return _get(target, property, receiver || target);
+}
+
+var Emitter =
+/*#__PURE__*/
+function () {
+  function Emitter() {
+    _classCallCheck(this, Emitter);
+
+    Object.defineProperty(this, 'listeners', {
+      value: {},
+      writable: true,
+      configurable: true
+    });
+  }
+
+  _createClass(Emitter, [{
+    key: "addEventListener",
+    value: function addEventListener(type, callback) {
+      if (!(type in this.listeners)) {
+        this.listeners[type] = [];
+      }
+
+      this.listeners[type].push(callback);
+    }
+  }, {
+    key: "removeEventListener",
+    value: function removeEventListener(type, callback) {
+      if (!(type in this.listeners)) {
+        return;
+      }
+
+      var stack = this.listeners[type];
+
+      for (var i = 0, l = stack.length; i < l; i++) {
+        if (stack[i] === callback) {
+          stack.splice(i, 1);
+          return;
+        }
+      }
+    }
+  }, {
+    key: "dispatchEvent",
+    value: function dispatchEvent(event) {
+      var _this = this;
+
+      if (!(event.type in this.listeners)) {
+        return;
+      }
+
+      var debounce = function debounce(callback) {
+        setTimeout(function () {
+          return callback.call(_this, event);
+        });
+      };
+
+      var stack = this.listeners[event.type];
+
+      for (var i = 0, l = stack.length; i < l; i++) {
+        debounce(stack[i]);
+      }
+
+      return !event.defaultPrevented;
+    }
+  }]);
+
+  return Emitter;
+}();
+
+var AbortSignal =
+/*#__PURE__*/
+function (_Emitter) {
+  _inherits(AbortSignal, _Emitter);
+
+  function AbortSignal() {
+    var _this2;
+
+    _classCallCheck(this, AbortSignal);
+
+    _this2 = _possibleConstructorReturn(this, _getPrototypeOf(AbortSignal).call(this)); // Some versions of babel does not transpile super() correctly for IE <= 10, if the parent
+    // constructor has failed to run, then "this.listeners" will still be undefined and then we call
+    // the parent constructor directly instead as a workaround. For general details, see babel bug:
+    // https://github.com/babel/babel/issues/3041
+    // This hack was added as a fix for the issue described here:
+    // https://github.com/Financial-Times/polyfill-library/pull/59#issuecomment-477558042
+
+    if (!_this2.listeners) {
+      Emitter.call(_assertThisInitialized(_this2));
+    } // Compared to assignment, Object.defineProperty makes properties non-enumerable by default and
+    // we want Object.keys(new AbortController().signal) to be [] for compat with the native impl
+
+
+    Object.defineProperty(_assertThisInitialized(_this2), 'aborted', {
+      value: false,
+      writable: true,
+      configurable: true
+    });
+    Object.defineProperty(_assertThisInitialized(_this2), 'onabort', {
+      value: null,
+      writable: true,
+      configurable: true
+    });
+    return _this2;
+  }
+
+  _createClass(AbortSignal, [{
+    key: "toString",
+    value: function toString() {
+      return '[object AbortSignal]';
+    }
+  }, {
+    key: "dispatchEvent",
+    value: function dispatchEvent(event) {
+      if (event.type === 'abort') {
+        this.aborted = true;
+
+        if (typeof this.onabort === 'function') {
+          this.onabort.call(this, event);
+        }
+      }
+
+      _get(_getPrototypeOf(AbortSignal.prototype), "dispatchEvent", this).call(this, event);
+    }
+  }]);
+
+  return AbortSignal;
+}(Emitter);
+var AbortController =
+/*#__PURE__*/
+function () {
+  function AbortController() {
+    _classCallCheck(this, AbortController);
+
+    // Compared to assignment, Object.defineProperty makes properties non-enumerable by default and
+    // we want Object.keys(new AbortController()) to be [] for compat with the native impl
+    Object.defineProperty(this, 'signal', {
+      value: new AbortSignal(),
+      writable: true,
+      configurable: true
+    });
+  }
+
+  _createClass(AbortController, [{
+    key: "abort",
+    value: function abort() {
+      var event;
+
+      try {
+        event = new Event('abort');
+      } catch (e) {
+        if (typeof document !== 'undefined') {
+          if (!document.createEvent) {
+            // For Internet Explorer 8:
+            event = document.createEventObject();
+            event.type = 'abort';
+          } else {
+            // For Internet Explorer 11:
+            event = document.createEvent('Event');
+            event.initEvent('abort', false, false);
+          }
+        } else {
+          // Fallback where document isn't available:
+          event = {
+            type: 'abort',
+            bubbles: false,
+            cancelable: false
+          };
+        }
+      }
+
+      this.signal.dispatchEvent(event);
+    }
+  }, {
+    key: "toString",
+    value: function toString() {
+      return '[object AbortController]';
+    }
+  }]);
+
+  return AbortController;
+}();
+
+if (typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+  // These are necessary to make sure that we get correct output for:
+  // Object.prototype.toString.call(new AbortController())
+  AbortController.prototype[Symbol.toStringTag] = 'AbortController';
+  AbortSignal.prototype[Symbol.toStringTag] = 'AbortSignal';
+}
+
+function polyfillNeeded(self) {
+  if (self.__FORCE_INSTALL_ABORTCONTROLLER_POLYFILL) {
+    console.log('__FORCE_INSTALL_ABORTCONTROLLER_POLYFILL=true is set, will force install polyfill');
+    return true;
+  } // Note that the "unfetch" minimal fetch polyfill defines fetch() without
+  // defining window.Request, and this polyfill need to work on top of unfetch
+  // so the below feature detection needs the !self.AbortController part.
+  // The Request.prototype check is also needed because Safari versions 11.1.2
+  // up to and including 12.1.x has a window.AbortController present but still
+  // does NOT correctly implement abortable fetch:
+  // https://bugs.webkit.org/show_bug.cgi?id=174980#c2
+
+
+  return typeof self.Request === 'function' && !self.Request.prototype.hasOwnProperty('signal') || !self.AbortController;
+}
+
+/**
+ * Note: the "fetch.Request" default value is available for fetch imported from
+ * the "node-fetch" package and not in browsers. This is OK since browsers
+ * will be importing umd-polyfill.js from that path "self" is passed the
+ * decorator so the default value will not be used (because browsers that define
+ * fetch also has Request). One quirky setup where self.fetch exists but
+ * self.Request does not is when the "unfetch" minimal fetch polyfill is used
+ * on top of IE11; for this case the browser will try to use the fetch.Request
+ * default value which in turn will be undefined but then then "if (Request)"
+ * will ensure that you get a patched fetch but still no Request (as expected).
+ * @param {fetch, Request = fetch.Request}
+ * @returns {fetch: abortableFetch, Request: AbortableRequest}
+ */
+
+function abortableFetchDecorator(patchTargets) {
+  if ('function' === typeof patchTargets) {
+    patchTargets = {
+      fetch: patchTargets
+    };
+  }
+
+  var _patchTargets = patchTargets,
+      fetch = _patchTargets.fetch,
+      _patchTargets$Request = _patchTargets.Request,
+      NativeRequest = _patchTargets$Request === void 0 ? fetch.Request : _patchTargets$Request,
+      NativeAbortController = _patchTargets.AbortController,
+      _patchTargets$__FORCE = _patchTargets.__FORCE_INSTALL_ABORTCONTROLLER_POLYFILL,
+      __FORCE_INSTALL_ABORTCONTROLLER_POLYFILL = _patchTargets$__FORCE === void 0 ? false : _patchTargets$__FORCE;
+
+  if (!polyfillNeeded({
+    fetch: fetch,
+    Request: NativeRequest,
+    AbortController: NativeAbortController,
+    __FORCE_INSTALL_ABORTCONTROLLER_POLYFILL: __FORCE_INSTALL_ABORTCONTROLLER_POLYFILL
+  })) {
+    return {
+      fetch: fetch,
+      Request: Request
+    };
+  }
+
+  var Request = NativeRequest; // Note that the "unfetch" minimal fetch polyfill defines fetch() without
+  // defining window.Request, and this polyfill need to work on top of unfetch
+  // hence we only patch it if it's available. Also we don't patch it if signal
+  // is already available on the Request prototype because in this case support
+  // is present and the patching below can cause a crash since it assigns to
+  // request.signal which is technically a read-only property. This latter error
+  // happens when you run the main5.js node-fetch example in the repo
+  // "abortcontroller-polyfill-examples". The exact error is:
+  //   request.signal = init.signal;
+  //   ^
+  // TypeError: Cannot set property signal of #<Request> which has only a getter
+
+  if (Request && !Request.prototype.hasOwnProperty('signal') || __FORCE_INSTALL_ABORTCONTROLLER_POLYFILL) {
+    Request = function Request(input, init) {
+      var signal;
+
+      if (init && init.signal) {
+        signal = init.signal; // Never pass init.signal to the native Request implementation when the polyfill has
+        // been installed because if we're running on top of a browser with a
+        // working native AbortController (i.e. the polyfill was installed due to
+        // __FORCE_INSTALL_ABORTCONTROLLER_POLYFILL being set), then passing our
+        // fake AbortSignal to the native fetch will trigger:
+        // TypeError: Failed to construct 'Request': member signal is not of type AbortSignal.
+
+        delete init.signal;
+      }
+
+      var request = new NativeRequest(input, init);
+
+      if (signal) {
+        Object.defineProperty(request, 'signal', {
+          writable: false,
+          enumerable: false,
+          configurable: true,
+          value: signal
+        });
+      }
+
+      return request;
+    };
+
+    Request.prototype = NativeRequest.prototype;
+  }
+
+  var realFetch = fetch;
+
+  var abortableFetch = function abortableFetch(input, init) {
+    var signal = Request && Request.prototype.isPrototypeOf(input) ? input.signal : init ? init.signal : undefined;
+
+    if (signal) {
+      var abortError;
+
+      try {
+        abortError = new DOMException('Aborted', 'AbortError');
+      } catch (err) {
+        // IE 11 does not support calling the DOMException constructor, use a
+        // regular error object on it instead.
+        abortError = new Error('Aborted');
+        abortError.name = 'AbortError';
+      } // Return early if already aborted, thus avoiding making an HTTP request
+
+
+      if (signal.aborted) {
+        return Promise.reject(abortError);
+      } // Turn an event into a promise, reject it once `abort` is dispatched
+
+
+      var cancellation = new Promise(function (_, reject) {
+        signal.addEventListener('abort', function () {
+          return reject(abortError);
+        }, {
+          once: true
+        });
+      });
+
+      if (init && init.signal) {
+        // Never pass .signal to the native implementation when the polyfill has
+        // been installed because if we're running on top of a browser with a
+        // working native AbortController (i.e. the polyfill was installed due to
+        // __FORCE_INSTALL_ABORTCONTROLLER_POLYFILL being set), then passing our
+        // fake AbortSignal to the native fetch will trigger:
+        // TypeError: Failed to execute 'fetch' on 'Window': member signal is not of type AbortSignal.
+        delete init.signal;
+      } // Return the fastest promise (don't need to wait for request to finish)
+
+
+      return Promise.race([cancellation, realFetch(input, init)]);
+    }
+
+    return realFetch(input, init);
+  };
+
+  return {
+    fetch: abortableFetch,
+    Request: Request
+  };
+}
+
+exports.AbortController = AbortController;
+exports.AbortSignal = AbortSignal;
+exports.abortableFetch = abortableFetchDecorator;
+
+},{}],20:[function(require,module,exports){
+
+},{}],21:[function(require,module,exports){
+var hashClear = require('./_hashClear'),
+    hashDelete = require('./_hashDelete'),
+    hashGet = require('./_hashGet'),
+    hashHas = require('./_hashHas'),
+    hashSet = require('./_hashSet');
+
+/**
+ * Creates a hash object.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */
+function Hash(entries) {
+  var index = -1,
+      length = entries == null ? 0 : entries.length;
+
+  this.clear();
+  while (++index < length) {
+    var entry = entries[index];
+    this.set(entry[0], entry[1]);
+  }
+}
+
+// Add methods to `Hash`.
+Hash.prototype.clear = hashClear;
+Hash.prototype['delete'] = hashDelete;
+Hash.prototype.get = hashGet;
+Hash.prototype.has = hashHas;
+Hash.prototype.set = hashSet;
+
+module.exports = Hash;
+
+},{"./_hashClear":46,"./_hashDelete":47,"./_hashGet":48,"./_hashHas":49,"./_hashSet":50}],22:[function(require,module,exports){
+var listCacheClear = require('./_listCacheClear'),
+    listCacheDelete = require('./_listCacheDelete'),
+    listCacheGet = require('./_listCacheGet'),
+    listCacheHas = require('./_listCacheHas'),
+    listCacheSet = require('./_listCacheSet');
+
+/**
+ * Creates an list cache object.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */
+function ListCache(entries) {
+  var index = -1,
+      length = entries == null ? 0 : entries.length;
+
+  this.clear();
+  while (++index < length) {
+    var entry = entries[index];
+    this.set(entry[0], entry[1]);
+  }
+}
+
+// Add methods to `ListCache`.
+ListCache.prototype.clear = listCacheClear;
+ListCache.prototype['delete'] = listCacheDelete;
+ListCache.prototype.get = listCacheGet;
+ListCache.prototype.has = listCacheHas;
+ListCache.prototype.set = listCacheSet;
+
+module.exports = ListCache;
+
+},{"./_listCacheClear":56,"./_listCacheDelete":57,"./_listCacheGet":58,"./_listCacheHas":59,"./_listCacheSet":60}],23:[function(require,module,exports){
+var getNative = require('./_getNative'),
+    root = require('./_root');
+
+/* Built-in method references that are verified to be native. */
+var Map = getNative(root, 'Map');
+
+module.exports = Map;
+
+},{"./_getNative":42,"./_root":72}],24:[function(require,module,exports){
+var mapCacheClear = require('./_mapCacheClear'),
+    mapCacheDelete = require('./_mapCacheDelete'),
+    mapCacheGet = require('./_mapCacheGet'),
+    mapCacheHas = require('./_mapCacheHas'),
+    mapCacheSet = require('./_mapCacheSet');
+
+/**
+ * Creates a map cache object to store key-value pairs.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */
+function MapCache(entries) {
+  var index = -1,
+      length = entries == null ? 0 : entries.length;
+
+  this.clear();
+  while (++index < length) {
+    var entry = entries[index];
+    this.set(entry[0], entry[1]);
+  }
+}
+
+// Add methods to `MapCache`.
+MapCache.prototype.clear = mapCacheClear;
+MapCache.prototype['delete'] = mapCacheDelete;
+MapCache.prototype.get = mapCacheGet;
+MapCache.prototype.has = mapCacheHas;
+MapCache.prototype.set = mapCacheSet;
+
+module.exports = MapCache;
+
+},{"./_mapCacheClear":61,"./_mapCacheDelete":62,"./_mapCacheGet":63,"./_mapCacheHas":64,"./_mapCacheSet":65}],25:[function(require,module,exports){
+var root = require('./_root');
+
+/** Built-in value references. */
+var Symbol = root.Symbol;
+
+module.exports = Symbol;
+
+},{"./_root":72}],26:[function(require,module,exports){
+var baseTimes = require('./_baseTimes'),
+    isArguments = require('./isArguments'),
+    isArray = require('./isArray'),
+    isBuffer = require('./isBuffer'),
+    isIndex = require('./_isIndex'),
+    isTypedArray = require('./isTypedArray');
+
+/** Used for built-in method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * Creates an array of the enumerable property names of the array-like `value`.
+ *
+ * @private
+ * @param {*} value The value to query.
+ * @param {boolean} inherited Specify returning inherited property names.
+ * @returns {Array} Returns the array of property names.
+ */
+function arrayLikeKeys(value, inherited) {
+  var isArr = isArray(value),
+      isArg = !isArr && isArguments(value),
+      isBuff = !isArr && !isArg && isBuffer(value),
+      isType = !isArr && !isArg && !isBuff && isTypedArray(value),
+      skipIndexes = isArr || isArg || isBuff || isType,
+      result = skipIndexes ? baseTimes(value.length, String) : [],
+      length = result.length;
+
+  for (var key in value) {
+    if ((inherited || hasOwnProperty.call(value, key)) &&
+        !(skipIndexes && (
+           // Safari 9 has enumerable `arguments.length` in strict mode.
+           key == 'length' ||
+           // Node.js 0.10 has enumerable non-index properties on buffers.
+           (isBuff && (key == 'offset' || key == 'parent')) ||
+           // PhantomJS 2 has enumerable non-index properties on typed arrays.
+           (isType && (key == 'buffer' || key == 'byteLength' || key == 'byteOffset')) ||
+           // Skip index properties.
+           isIndex(key, length)
+        ))) {
+      result.push(key);
+    }
+  }
+  return result;
+}
+
+module.exports = arrayLikeKeys;
+
+},{"./_baseTimes":35,"./_isIndex":51,"./isArguments":78,"./isArray":79,"./isBuffer":82,"./isTypedArray":92}],27:[function(require,module,exports){
+/**
+ * A specialized version of `_.map` for arrays without support for iteratee
+ * shorthands.
+ *
+ * @private
+ * @param {Array} [array] The array to iterate over.
+ * @param {Function} iteratee The function invoked per iteration.
+ * @returns {Array} Returns the new mapped array.
+ */
+function arrayMap(array, iteratee) {
+  var index = -1,
+      length = array == null ? 0 : array.length,
+      result = Array(length);
+
+  while (++index < length) {
+    result[index] = iteratee(array[index], index, array);
+  }
+  return result;
+}
+
+module.exports = arrayMap;
+
+},{}],28:[function(require,module,exports){
+var eq = require('./eq');
+
+/**
+ * Gets the index at which the `key` is found in `array` of key-value pairs.
+ *
+ * @private
+ * @param {Array} array The array to inspect.
+ * @param {*} key The key to search for.
+ * @returns {number} Returns the index of the matched value, else `-1`.
+ */
+function assocIndexOf(array, key) {
+  var length = array.length;
+  while (length--) {
+    if (eq(array[length][0], key)) {
+      return length;
+    }
+  }
+  return -1;
+}
+
+module.exports = assocIndexOf;
+
+},{"./eq":76}],29:[function(require,module,exports){
+var castPath = require('./_castPath'),
+    toKey = require('./_toKey');
+
+/**
+ * The base implementation of `_.get` without support for default values.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @param {Array|string} path The path of the property to get.
+ * @returns {*} Returns the resolved value.
+ */
+function baseGet(object, path) {
+  path = castPath(path, object);
+
+  var index = 0,
+      length = path.length;
+
+  while (object != null && index < length) {
+    object = object[toKey(path[index++])];
+  }
+  return (index && index == length) ? object : undefined;
+}
+
+module.exports = baseGet;
+
+},{"./_castPath":38,"./_toKey":74}],30:[function(require,module,exports){
+var Symbol = require('./_Symbol'),
+    getRawTag = require('./_getRawTag'),
+    objectToString = require('./_objectToString');
+
+/** `Object#toString` result references. */
+var nullTag = '[object Null]',
+    undefinedTag = '[object Undefined]';
+
+/** Built-in value references. */
+var symToStringTag = Symbol ? Symbol.toStringTag : undefined;
+
+/**
+ * The base implementation of `getTag` without fallbacks for buggy environments.
+ *
+ * @private
+ * @param {*} value The value to query.
+ * @returns {string} Returns the `toStringTag`.
+ */
+function baseGetTag(value) {
+  if (value == null) {
+    return value === undefined ? undefinedTag : nullTag;
+  }
+  return (symToStringTag && symToStringTag in Object(value))
+    ? getRawTag(value)
+    : objectToString(value);
+}
+
+module.exports = baseGetTag;
+
+},{"./_Symbol":25,"./_getRawTag":44,"./_objectToString":70}],31:[function(require,module,exports){
+var baseGetTag = require('./_baseGetTag'),
+    isObjectLike = require('./isObjectLike');
+
+/** `Object#toString` result references. */
+var argsTag = '[object Arguments]';
+
+/**
+ * The base implementation of `_.isArguments`.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an `arguments` object,
+ */
+function baseIsArguments(value) {
+  return isObjectLike(value) && baseGetTag(value) == argsTag;
+}
+
+module.exports = baseIsArguments;
+
+},{"./_baseGetTag":30,"./isObjectLike":88}],32:[function(require,module,exports){
+var isFunction = require('./isFunction'),
+    isMasked = require('./_isMasked'),
+    isObject = require('./isObject'),
+    toSource = require('./_toSource');
+
+/**
+ * Used to match `RegExp`
+ * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
+ */
+var reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
+
+/** Used to detect host constructors (Safari). */
+var reIsHostCtor = /^\[object .+?Constructor\]$/;
+
+/** Used for built-in method references. */
+var funcProto = Function.prototype,
+    objectProto = Object.prototype;
+
+/** Used to resolve the decompiled source of functions. */
+var funcToString = funcProto.toString;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/** Used to detect if a method is native. */
+var reIsNative = RegExp('^' +
+  funcToString.call(hasOwnProperty).replace(reRegExpChar, '\\$&')
+  .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
+);
+
+/**
+ * The base implementation of `_.isNative` without bad shim checks.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a native function,
+ *  else `false`.
+ */
+function baseIsNative(value) {
+  if (!isObject(value) || isMasked(value)) {
+    return false;
+  }
+  var pattern = isFunction(value) ? reIsNative : reIsHostCtor;
+  return pattern.test(toSource(value));
+}
+
+module.exports = baseIsNative;
+
+},{"./_isMasked":54,"./_toSource":75,"./isFunction":83,"./isObject":87}],33:[function(require,module,exports){
+var baseGetTag = require('./_baseGetTag'),
+    isLength = require('./isLength'),
+    isObjectLike = require('./isObjectLike');
+
+/** `Object#toString` result references. */
+var argsTag = '[object Arguments]',
+    arrayTag = '[object Array]',
+    boolTag = '[object Boolean]',
+    dateTag = '[object Date]',
+    errorTag = '[object Error]',
+    funcTag = '[object Function]',
+    mapTag = '[object Map]',
+    numberTag = '[object Number]',
+    objectTag = '[object Object]',
+    regexpTag = '[object RegExp]',
+    setTag = '[object Set]',
+    stringTag = '[object String]',
+    weakMapTag = '[object WeakMap]';
+
+var arrayBufferTag = '[object ArrayBuffer]',
+    dataViewTag = '[object DataView]',
+    float32Tag = '[object Float32Array]',
+    float64Tag = '[object Float64Array]',
+    int8Tag = '[object Int8Array]',
+    int16Tag = '[object Int16Array]',
+    int32Tag = '[object Int32Array]',
+    uint8Tag = '[object Uint8Array]',
+    uint8ClampedTag = '[object Uint8ClampedArray]',
+    uint16Tag = '[object Uint16Array]',
+    uint32Tag = '[object Uint32Array]';
+
+/** Used to identify `toStringTag` values of typed arrays. */
+var typedArrayTags = {};
+typedArrayTags[float32Tag] = typedArrayTags[float64Tag] =
+typedArrayTags[int8Tag] = typedArrayTags[int16Tag] =
+typedArrayTags[int32Tag] = typedArrayTags[uint8Tag] =
+typedArrayTags[uint8ClampedTag] = typedArrayTags[uint16Tag] =
+typedArrayTags[uint32Tag] = true;
+typedArrayTags[argsTag] = typedArrayTags[arrayTag] =
+typedArrayTags[arrayBufferTag] = typedArrayTags[boolTag] =
+typedArrayTags[dataViewTag] = typedArrayTags[dateTag] =
+typedArrayTags[errorTag] = typedArrayTags[funcTag] =
+typedArrayTags[mapTag] = typedArrayTags[numberTag] =
+typedArrayTags[objectTag] = typedArrayTags[regexpTag] =
+typedArrayTags[setTag] = typedArrayTags[stringTag] =
+typedArrayTags[weakMapTag] = false;
+
+/**
+ * The base implementation of `_.isTypedArray` without Node.js optimizations.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a typed array, else `false`.
+ */
+function baseIsTypedArray(value) {
+  return isObjectLike(value) &&
+    isLength(value.length) && !!typedArrayTags[baseGetTag(value)];
+}
+
+module.exports = baseIsTypedArray;
+
+},{"./_baseGetTag":30,"./isLength":84,"./isObjectLike":88}],34:[function(require,module,exports){
+var isPrototype = require('./_isPrototype'),
+    nativeKeys = require('./_nativeKeys');
+
+/** Used for built-in method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * The base implementation of `_.keys` which doesn't treat sparse arrays as dense.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @returns {Array} Returns the array of property names.
+ */
+function baseKeys(object) {
+  if (!isPrototype(object)) {
+    return nativeKeys(object);
+  }
+  var result = [];
+  for (var key in Object(object)) {
+    if (hasOwnProperty.call(object, key) && key != 'constructor') {
+      result.push(key);
+    }
+  }
+  return result;
+}
+
+module.exports = baseKeys;
+
+},{"./_isPrototype":55,"./_nativeKeys":68}],35:[function(require,module,exports){
+/**
+ * The base implementation of `_.times` without support for iteratee shorthands
+ * or max array length checks.
+ *
+ * @private
+ * @param {number} n The number of times to invoke `iteratee`.
+ * @param {Function} iteratee The function invoked per iteration.
+ * @returns {Array} Returns the array of results.
+ */
+function baseTimes(n, iteratee) {
+  var index = -1,
+      result = Array(n);
+
+  while (++index < n) {
+    result[index] = iteratee(index);
+  }
+  return result;
+}
+
+module.exports = baseTimes;
+
+},{}],36:[function(require,module,exports){
+var Symbol = require('./_Symbol'),
+    arrayMap = require('./_arrayMap'),
+    isArray = require('./isArray'),
+    isSymbol = require('./isSymbol');
+
+/** Used as references for various `Number` constants. */
+var INFINITY = 1 / 0;
+
+/** Used to convert symbols to primitives and strings. */
+var symbolProto = Symbol ? Symbol.prototype : undefined,
+    symbolToString = symbolProto ? symbolProto.toString : undefined;
+
+/**
+ * The base implementation of `_.toString` which doesn't convert nullish
+ * values to empty strings.
+ *
+ * @private
+ * @param {*} value The value to process.
+ * @returns {string} Returns the string.
+ */
+function baseToString(value) {
+  // Exit early for strings to avoid a performance hit in some environments.
+  if (typeof value == 'string') {
+    return value;
+  }
+  if (isArray(value)) {
+    // Recursively convert values (susceptible to call stack limits).
+    return arrayMap(value, baseToString) + '';
+  }
+  if (isSymbol(value)) {
+    return symbolToString ? symbolToString.call(value) : '';
+  }
+  var result = (value + '');
+  return (result == '0' && (1 / value) == -INFINITY) ? '-0' : result;
+}
+
+module.exports = baseToString;
+
+},{"./_Symbol":25,"./_arrayMap":27,"./isArray":79,"./isSymbol":91}],37:[function(require,module,exports){
+/**
+ * The base implementation of `_.unary` without support for storing metadata.
+ *
+ * @private
+ * @param {Function} func The function to cap arguments for.
+ * @returns {Function} Returns the new capped function.
+ */
+function baseUnary(func) {
+  return function(value) {
+    return func(value);
+  };
+}
+
+module.exports = baseUnary;
+
+},{}],38:[function(require,module,exports){
+var isArray = require('./isArray'),
+    isKey = require('./_isKey'),
+    stringToPath = require('./_stringToPath'),
+    toString = require('./toString');
+
+/**
+ * Casts `value` to a path array if it's not one.
+ *
+ * @private
+ * @param {*} value The value to inspect.
+ * @param {Object} [object] The object to query keys on.
+ * @returns {Array} Returns the cast property path array.
+ */
+function castPath(value, object) {
+  if (isArray(value)) {
+    return value;
+  }
+  return isKey(value, object) ? [value] : stringToPath(toString(value));
+}
+
+module.exports = castPath;
+
+},{"./_isKey":52,"./_stringToPath":73,"./isArray":79,"./toString":96}],39:[function(require,module,exports){
+var root = require('./_root');
+
+/** Used to detect overreaching core-js shims. */
+var coreJsData = root['__core-js_shared__'];
+
+module.exports = coreJsData;
+
+},{"./_root":72}],40:[function(require,module,exports){
+(function (global){
+/** Detect free variable `global` from Node.js. */
+var freeGlobal = typeof global == 'object' && global && global.Object === Object && global;
+
+module.exports = freeGlobal;
+
+}).call(this,typeof __webpack_require__.g !== "undefined" ? __webpack_require__.g : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],41:[function(require,module,exports){
+var isKeyable = require('./_isKeyable');
+
+/**
+ * Gets the data for `map`.
+ *
+ * @private
+ * @param {Object} map The map to query.
+ * @param {string} key The reference key.
+ * @returns {*} Returns the map data.
+ */
+function getMapData(map, key) {
+  var data = map.__data__;
+  return isKeyable(key)
+    ? data[typeof key == 'string' ? 'string' : 'hash']
+    : data.map;
+}
+
+module.exports = getMapData;
+
+},{"./_isKeyable":53}],42:[function(require,module,exports){
+var baseIsNative = require('./_baseIsNative'),
+    getValue = require('./_getValue');
+
+/**
+ * Gets the native function at `key` of `object`.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @param {string} key The key of the method to get.
+ * @returns {*} Returns the function if it's native, else `undefined`.
+ */
+function getNative(object, key) {
+  var value = getValue(object, key);
+  return baseIsNative(value) ? value : undefined;
+}
+
+module.exports = getNative;
+
+},{"./_baseIsNative":32,"./_getValue":45}],43:[function(require,module,exports){
+var overArg = require('./_overArg');
+
+/** Built-in value references. */
+var getPrototype = overArg(Object.getPrototypeOf, Object);
+
+module.exports = getPrototype;
+
+},{"./_overArg":71}],44:[function(require,module,exports){
+var Symbol = require('./_Symbol');
+
+/** Used for built-in method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var nativeObjectToString = objectProto.toString;
+
+/** Built-in value references. */
+var symToStringTag = Symbol ? Symbol.toStringTag : undefined;
+
+/**
+ * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
+ *
+ * @private
+ * @param {*} value The value to query.
+ * @returns {string} Returns the raw `toStringTag`.
+ */
+function getRawTag(value) {
+  var isOwn = hasOwnProperty.call(value, symToStringTag),
+      tag = value[symToStringTag];
+
+  try {
+    value[symToStringTag] = undefined;
+    var unmasked = true;
+  } catch (e) {}
+
+  var result = nativeObjectToString.call(value);
+  if (unmasked) {
+    if (isOwn) {
+      value[symToStringTag] = tag;
+    } else {
+      delete value[symToStringTag];
+    }
+  }
+  return result;
+}
+
+module.exports = getRawTag;
+
+},{"./_Symbol":25}],45:[function(require,module,exports){
+/**
+ * Gets the value at `key` of `object`.
+ *
+ * @private
+ * @param {Object} [object] The object to query.
+ * @param {string} key The key of the property to get.
+ * @returns {*} Returns the property value.
+ */
+function getValue(object, key) {
+  return object == null ? undefined : object[key];
+}
+
+module.exports = getValue;
+
+},{}],46:[function(require,module,exports){
+var nativeCreate = require('./_nativeCreate');
+
+/**
+ * Removes all key-value entries from the hash.
+ *
+ * @private
+ * @name clear
+ * @memberOf Hash
+ */
+function hashClear() {
+  this.__data__ = nativeCreate ? nativeCreate(null) : {};
+  this.size = 0;
+}
+
+module.exports = hashClear;
+
+},{"./_nativeCreate":67}],47:[function(require,module,exports){
+/**
+ * Removes `key` and its value from the hash.
+ *
+ * @private
+ * @name delete
+ * @memberOf Hash
+ * @param {Object} hash The hash to modify.
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */
+function hashDelete(key) {
+  var result = this.has(key) && delete this.__data__[key];
+  this.size -= result ? 1 : 0;
+  return result;
+}
+
+module.exports = hashDelete;
+
+},{}],48:[function(require,module,exports){
+var nativeCreate = require('./_nativeCreate');
+
+/** Used to stand-in for `undefined` hash values. */
+var HASH_UNDEFINED = '__lodash_hash_undefined__';
+
+/** Used for built-in method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * Gets the hash value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf Hash
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */
+function hashGet(key) {
+  var data = this.__data__;
+  if (nativeCreate) {
+    var result = data[key];
+    return result === HASH_UNDEFINED ? undefined : result;
+  }
+  return hasOwnProperty.call(data, key) ? data[key] : undefined;
+}
+
+module.exports = hashGet;
+
+},{"./_nativeCreate":67}],49:[function(require,module,exports){
+var nativeCreate = require('./_nativeCreate');
+
+/** Used for built-in method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * Checks if a hash value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf Hash
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */
+function hashHas(key) {
+  var data = this.__data__;
+  return nativeCreate ? (data[key] !== undefined) : hasOwnProperty.call(data, key);
+}
+
+module.exports = hashHas;
+
+},{"./_nativeCreate":67}],50:[function(require,module,exports){
+var nativeCreate = require('./_nativeCreate');
+
+/** Used to stand-in for `undefined` hash values. */
+var HASH_UNDEFINED = '__lodash_hash_undefined__';
+
+/**
+ * Sets the hash `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf Hash
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the hash instance.
+ */
+function hashSet(key, value) {
+  var data = this.__data__;
+  this.size += this.has(key) ? 0 : 1;
+  data[key] = (nativeCreate && value === undefined) ? HASH_UNDEFINED : value;
+  return this;
+}
+
+module.exports = hashSet;
+
+},{"./_nativeCreate":67}],51:[function(require,module,exports){
+/** Used as references for various `Number` constants. */
+var MAX_SAFE_INTEGER = 9007199254740991;
+
+/** Used to detect unsigned integer values. */
+var reIsUint = /^(?:0|[1-9]\d*)$/;
+
+/**
+ * Checks if `value` is a valid array-like index.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @param {number} [length=MAX_SAFE_INTEGER] The upper bounds of a valid index.
+ * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
+ */
+function isIndex(value, length) {
+  var type = typeof value;
+  length = length == null ? MAX_SAFE_INTEGER : length;
+
+  return !!length &&
+    (type == 'number' ||
+      (type != 'symbol' && reIsUint.test(value))) &&
+        (value > -1 && value % 1 == 0 && value < length);
+}
+
+module.exports = isIndex;
+
+},{}],52:[function(require,module,exports){
+var isArray = require('./isArray'),
+    isSymbol = require('./isSymbol');
+
+/** Used to match property names within property paths. */
+var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,
+    reIsPlainProp = /^\w*$/;
+
+/**
+ * Checks if `value` is a property name and not a property path.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @param {Object} [object] The object to query keys on.
+ * @returns {boolean} Returns `true` if `value` is a property name, else `false`.
+ */
+function isKey(value, object) {
+  if (isArray(value)) {
+    return false;
+  }
+  var type = typeof value;
+  if (type == 'number' || type == 'symbol' || type == 'boolean' ||
+      value == null || isSymbol(value)) {
+    return true;
+  }
+  return reIsPlainProp.test(value) || !reIsDeepProp.test(value) ||
+    (object != null && value in Object(object));
+}
+
+module.exports = isKey;
+
+},{"./isArray":79,"./isSymbol":91}],53:[function(require,module,exports){
+/**
+ * Checks if `value` is suitable for use as unique object key.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is suitable, else `false`.
+ */
+function isKeyable(value) {
+  var type = typeof value;
+  return (type == 'string' || type == 'number' || type == 'symbol' || type == 'boolean')
+    ? (value !== '__proto__')
+    : (value === null);
+}
+
+module.exports = isKeyable;
+
+},{}],54:[function(require,module,exports){
+var coreJsData = require('./_coreJsData');
+
+/** Used to detect methods masquerading as native. */
+var maskSrcKey = (function() {
+  var uid = /[^.]+$/.exec(coreJsData && coreJsData.keys && coreJsData.keys.IE_PROTO || '');
+  return uid ? ('Symbol(src)_1.' + uid) : '';
+}());
+
+/**
+ * Checks if `func` has its source masked.
+ *
+ * @private
+ * @param {Function} func The function to check.
+ * @returns {boolean} Returns `true` if `func` is masked, else `false`.
+ */
+function isMasked(func) {
+  return !!maskSrcKey && (maskSrcKey in func);
+}
+
+module.exports = isMasked;
+
+},{"./_coreJsData":39}],55:[function(require,module,exports){
+/** Used for built-in method references. */
+var objectProto = Object.prototype;
+
+/**
+ * Checks if `value` is likely a prototype object.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a prototype, else `false`.
+ */
+function isPrototype(value) {
+  var Ctor = value && value.constructor,
+      proto = (typeof Ctor == 'function' && Ctor.prototype) || objectProto;
+
+  return value === proto;
+}
+
+module.exports = isPrototype;
+
+},{}],56:[function(require,module,exports){
+/**
+ * Removes all key-value entries from the list cache.
+ *
+ * @private
+ * @name clear
+ * @memberOf ListCache
+ */
+function listCacheClear() {
+  this.__data__ = [];
+  this.size = 0;
+}
+
+module.exports = listCacheClear;
+
+},{}],57:[function(require,module,exports){
+var assocIndexOf = require('./_assocIndexOf');
+
+/** Used for built-in method references. */
+var arrayProto = Array.prototype;
+
+/** Built-in value references. */
+var splice = arrayProto.splice;
+
+/**
+ * Removes `key` and its value from the list cache.
+ *
+ * @private
+ * @name delete
+ * @memberOf ListCache
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */
+function listCacheDelete(key) {
+  var data = this.__data__,
+      index = assocIndexOf(data, key);
+
+  if (index < 0) {
+    return false;
+  }
+  var lastIndex = data.length - 1;
+  if (index == lastIndex) {
+    data.pop();
+  } else {
+    splice.call(data, index, 1);
+  }
+  --this.size;
+  return true;
+}
+
+module.exports = listCacheDelete;
+
+},{"./_assocIndexOf":28}],58:[function(require,module,exports){
+var assocIndexOf = require('./_assocIndexOf');
+
+/**
+ * Gets the list cache value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf ListCache
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */
+function listCacheGet(key) {
+  var data = this.__data__,
+      index = assocIndexOf(data, key);
+
+  return index < 0 ? undefined : data[index][1];
+}
+
+module.exports = listCacheGet;
+
+},{"./_assocIndexOf":28}],59:[function(require,module,exports){
+var assocIndexOf = require('./_assocIndexOf');
+
+/**
+ * Checks if a list cache value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf ListCache
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */
+function listCacheHas(key) {
+  return assocIndexOf(this.__data__, key) > -1;
+}
+
+module.exports = listCacheHas;
+
+},{"./_assocIndexOf":28}],60:[function(require,module,exports){
+var assocIndexOf = require('./_assocIndexOf');
+
+/**
+ * Sets the list cache `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf ListCache
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the list cache instance.
+ */
+function listCacheSet(key, value) {
+  var data = this.__data__,
+      index = assocIndexOf(data, key);
+
+  if (index < 0) {
+    ++this.size;
+    data.push([key, value]);
+  } else {
+    data[index][1] = value;
+  }
+  return this;
+}
+
+module.exports = listCacheSet;
+
+},{"./_assocIndexOf":28}],61:[function(require,module,exports){
+var Hash = require('./_Hash'),
+    ListCache = require('./_ListCache'),
+    Map = require('./_Map');
+
+/**
+ * Removes all key-value entries from the map.
+ *
+ * @private
+ * @name clear
+ * @memberOf MapCache
+ */
+function mapCacheClear() {
+  this.size = 0;
+  this.__data__ = {
+    'hash': new Hash,
+    'map': new (Map || ListCache),
+    'string': new Hash
+  };
+}
+
+module.exports = mapCacheClear;
+
+},{"./_Hash":21,"./_ListCache":22,"./_Map":23}],62:[function(require,module,exports){
+var getMapData = require('./_getMapData');
+
+/**
+ * Removes `key` and its value from the map.
+ *
+ * @private
+ * @name delete
+ * @memberOf MapCache
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */
+function mapCacheDelete(key) {
+  var result = getMapData(this, key)['delete'](key);
+  this.size -= result ? 1 : 0;
+  return result;
+}
+
+module.exports = mapCacheDelete;
+
+},{"./_getMapData":41}],63:[function(require,module,exports){
+var getMapData = require('./_getMapData');
+
+/**
+ * Gets the map value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf MapCache
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */
+function mapCacheGet(key) {
+  return getMapData(this, key).get(key);
+}
+
+module.exports = mapCacheGet;
+
+},{"./_getMapData":41}],64:[function(require,module,exports){
+var getMapData = require('./_getMapData');
+
+/**
+ * Checks if a map value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf MapCache
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */
+function mapCacheHas(key) {
+  return getMapData(this, key).has(key);
+}
+
+module.exports = mapCacheHas;
+
+},{"./_getMapData":41}],65:[function(require,module,exports){
+var getMapData = require('./_getMapData');
+
+/**
+ * Sets the map `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf MapCache
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the map cache instance.
+ */
+function mapCacheSet(key, value) {
+  var data = getMapData(this, key),
+      size = data.size;
+
+  data.set(key, value);
+  this.size += data.size == size ? 0 : 1;
+  return this;
+}
+
+module.exports = mapCacheSet;
+
+},{"./_getMapData":41}],66:[function(require,module,exports){
+var memoize = require('./memoize');
+
+/** Used as the maximum memoize cache size. */
+var MAX_MEMOIZE_SIZE = 500;
+
+/**
+ * A specialized version of `_.memoize` which clears the memoized function's
+ * cache when it exceeds `MAX_MEMOIZE_SIZE`.
+ *
+ * @private
+ * @param {Function} func The function to have its output memoized.
+ * @returns {Function} Returns the new memoized function.
+ */
+function memoizeCapped(func) {
+  var result = memoize(func, function(key) {
+    if (cache.size === MAX_MEMOIZE_SIZE) {
+      cache.clear();
+    }
+    return key;
+  });
+
+  var cache = result.cache;
+  return result;
+}
+
+module.exports = memoizeCapped;
+
+},{"./memoize":94}],67:[function(require,module,exports){
+var getNative = require('./_getNative');
+
+/* Built-in method references that are verified to be native. */
+var nativeCreate = getNative(Object, 'create');
+
+module.exports = nativeCreate;
+
+},{"./_getNative":42}],68:[function(require,module,exports){
+var overArg = require('./_overArg');
+
+/* Built-in method references for those with the same name as other `lodash` methods. */
+var nativeKeys = overArg(Object.keys, Object);
+
+module.exports = nativeKeys;
+
+},{"./_overArg":71}],69:[function(require,module,exports){
+var freeGlobal = require('./_freeGlobal');
+
+/** Detect free variable `exports`. */
+var freeExports = typeof exports == 'object' && exports && !exports.nodeType && exports;
+
+/** Detect free variable `module`. */
+var freeModule = freeExports && typeof module == 'object' && module && !module.nodeType && module;
+
+/** Detect the popular CommonJS extension `module.exports`. */
+var moduleExports = freeModule && freeModule.exports === freeExports;
+
+/** Detect free variable `process` from Node.js. */
+var freeProcess = moduleExports && freeGlobal.process;
+
+/** Used to access faster Node.js helpers. */
+var nodeUtil = (function() {
+  try {
+    // Use `util.types` for Node.js 10+.
+    var types = freeModule && freeModule.require && freeModule.require('util').types;
+
+    if (types) {
+      return types;
+    }
+
+    // Legacy `process.binding('util')` for Node.js < 10.
+    return freeProcess && freeProcess.binding && freeProcess.binding('util');
+  } catch (e) {}
+}());
+
+module.exports = nodeUtil;
+
+},{"./_freeGlobal":40}],70:[function(require,module,exports){
+/** Used for built-in method references. */
+var objectProto = Object.prototype;
+
+/**
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var nativeObjectToString = objectProto.toString;
+
+/**
+ * Converts `value` to a string using `Object.prototype.toString`.
+ *
+ * @private
+ * @param {*} value The value to convert.
+ * @returns {string} Returns the converted string.
+ */
+function objectToString(value) {
+  return nativeObjectToString.call(value);
+}
+
+module.exports = objectToString;
+
+},{}],71:[function(require,module,exports){
+/**
+ * Creates a unary function that invokes `func` with its argument transformed.
+ *
+ * @private
+ * @param {Function} func The function to wrap.
+ * @param {Function} transform The argument transform.
+ * @returns {Function} Returns the new function.
+ */
+function overArg(func, transform) {
+  return function(arg) {
+    return func(transform(arg));
+  };
+}
+
+module.exports = overArg;
+
+},{}],72:[function(require,module,exports){
+var freeGlobal = require('./_freeGlobal');
+
+/** Detect free variable `self`. */
+var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
+
+/** Used as a reference to the global object. */
+var root = freeGlobal || freeSelf || Function('return this')();
+
+module.exports = root;
+
+},{"./_freeGlobal":40}],73:[function(require,module,exports){
+var memoizeCapped = require('./_memoizeCapped');
+
+/** Used to match property names within property paths. */
+var rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
+
+/** Used to match backslashes in property paths. */
+var reEscapeChar = /\\(\\)?/g;
+
+/**
+ * Converts `string` to a property path array.
+ *
+ * @private
+ * @param {string} string The string to convert.
+ * @returns {Array} Returns the property path array.
+ */
+var stringToPath = memoizeCapped(function(string) {
+  var result = [];
+  if (string.charCodeAt(0) === 46 /* . */) {
+    result.push('');
+  }
+  string.replace(rePropName, function(match, number, quote, subString) {
+    result.push(quote ? subString.replace(reEscapeChar, '$1') : (number || match));
+  });
+  return result;
+});
+
+module.exports = stringToPath;
+
+},{"./_memoizeCapped":66}],74:[function(require,module,exports){
+var isSymbol = require('./isSymbol');
+
+/** Used as references for various `Number` constants. */
+var INFINITY = 1 / 0;
+
+/**
+ * Converts `value` to a string key if it's not a string or symbol.
+ *
+ * @private
+ * @param {*} value The value to inspect.
+ * @returns {string|symbol} Returns the key.
+ */
+function toKey(value) {
+  if (typeof value == 'string' || isSymbol(value)) {
+    return value;
+  }
+  var result = (value + '');
+  return (result == '0' && (1 / value) == -INFINITY) ? '-0' : result;
+}
+
+module.exports = toKey;
+
+},{"./isSymbol":91}],75:[function(require,module,exports){
+/** Used for built-in method references. */
+var funcProto = Function.prototype;
+
+/** Used to resolve the decompiled source of functions. */
+var funcToString = funcProto.toString;
+
+/**
+ * Converts `func` to its source code.
+ *
+ * @private
+ * @param {Function} func The function to convert.
+ * @returns {string} Returns the source code.
+ */
+function toSource(func) {
+  if (func != null) {
+    try {
+      return funcToString.call(func);
+    } catch (e) {}
+    try {
+      return (func + '');
+    } catch (e) {}
+  }
+  return '';
+}
+
+module.exports = toSource;
+
+},{}],76:[function(require,module,exports){
+/**
+ * Performs a
+ * [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
+ * comparison between two values to determine if they are equivalent.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to compare.
+ * @param {*} other The other value to compare.
+ * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
+ * @example
+ *
+ * var object = { 'a': 1 };
+ * var other = { 'a': 1 };
+ *
+ * _.eq(object, object);
+ * // => true
+ *
+ * _.eq(object, other);
+ * // => false
+ *
+ * _.eq('a', 'a');
+ * // => true
+ *
+ * _.eq('a', Object('a'));
+ * // => false
+ *
+ * _.eq(NaN, NaN);
+ * // => true
+ */
+function eq(value, other) {
+  return value === other || (value !== value && other !== other);
+}
+
+module.exports = eq;
+
+},{}],77:[function(require,module,exports){
+var baseGet = require('./_baseGet');
+
+/**
+ * Gets the value at `path` of `object`. If the resolved value is
+ * `undefined`, the `defaultValue` is returned in its place.
+ *
+ * @static
+ * @memberOf _
+ * @since 3.7.0
+ * @category Object
+ * @param {Object} object The object to query.
+ * @param {Array|string} path The path of the property to get.
+ * @param {*} [defaultValue] The value returned for `undefined` resolved values.
+ * @returns {*} Returns the resolved value.
+ * @example
+ *
+ * var object = { 'a': [{ 'b': { 'c': 3 } }] };
+ *
+ * _.get(object, 'a[0].b.c');
+ * // => 3
+ *
+ * _.get(object, ['a', '0', 'b', 'c']);
+ * // => 3
+ *
+ * _.get(object, 'a.b.c', 'default');
+ * // => 'default'
+ */
+function get(object, path, defaultValue) {
+  var result = object == null ? undefined : baseGet(object, path);
+  return result === undefined ? defaultValue : result;
+}
+
+module.exports = get;
+
+},{"./_baseGet":29}],78:[function(require,module,exports){
+var baseIsArguments = require('./_baseIsArguments'),
+    isObjectLike = require('./isObjectLike');
+
+/** Used for built-in method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/** Built-in value references. */
+var propertyIsEnumerable = objectProto.propertyIsEnumerable;
+
+/**
+ * Checks if `value` is likely an `arguments` object.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an `arguments` object,
+ *  else `false`.
+ * @example
+ *
+ * _.isArguments(function() { return arguments; }());
+ * // => true
+ *
+ * _.isArguments([1, 2, 3]);
+ * // => false
+ */
+var isArguments = baseIsArguments(function() { return arguments; }()) ? baseIsArguments : function(value) {
+  return isObjectLike(value) && hasOwnProperty.call(value, 'callee') &&
+    !propertyIsEnumerable.call(value, 'callee');
+};
+
+module.exports = isArguments;
+
+},{"./_baseIsArguments":31,"./isObjectLike":88}],79:[function(require,module,exports){
+/**
+ * Checks if `value` is classified as an `Array` object.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an array, else `false`.
+ * @example
+ *
+ * _.isArray([1, 2, 3]);
+ * // => true
+ *
+ * _.isArray(document.body.children);
+ * // => false
+ *
+ * _.isArray('abc');
+ * // => false
+ *
+ * _.isArray(_.noop);
+ * // => false
+ */
+var isArray = Array.isArray;
+
+module.exports = isArray;
+
+},{}],80:[function(require,module,exports){
+var isFunction = require('./isFunction'),
+    isLength = require('./isLength');
+
+/**
+ * Checks if `value` is array-like. A value is considered array-like if it's
+ * not a function and has a `value.length` that's an integer greater than or
+ * equal to `0` and less than or equal to `Number.MAX_SAFE_INTEGER`.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is array-like, else `false`.
+ * @example
+ *
+ * _.isArrayLike([1, 2, 3]);
+ * // => true
+ *
+ * _.isArrayLike(document.body.children);
+ * // => true
+ *
+ * _.isArrayLike('abc');
+ * // => true
+ *
+ * _.isArrayLike(_.noop);
+ * // => false
+ */
+function isArrayLike(value) {
+  return value != null && isLength(value.length) && !isFunction(value);
+}
+
+module.exports = isArrayLike;
+
+},{"./isFunction":83,"./isLength":84}],81:[function(require,module,exports){
+var baseGetTag = require('./_baseGetTag'),
+    isObjectLike = require('./isObjectLike');
+
+/** `Object#toString` result references. */
+var boolTag = '[object Boolean]';
+
+/**
+ * Checks if `value` is classified as a boolean primitive or object.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a boolean, else `false`.
+ * @example
+ *
+ * _.isBoolean(false);
+ * // => true
+ *
+ * _.isBoolean(null);
+ * // => false
+ */
+function isBoolean(value) {
+  return value === true || value === false ||
+    (isObjectLike(value) && baseGetTag(value) == boolTag);
+}
+
+module.exports = isBoolean;
+
+},{"./_baseGetTag":30,"./isObjectLike":88}],82:[function(require,module,exports){
+var root = require('./_root'),
+    stubFalse = require('./stubFalse');
+
+/** Detect free variable `exports`. */
+var freeExports = typeof exports == 'object' && exports && !exports.nodeType && exports;
+
+/** Detect free variable `module`. */
+var freeModule = freeExports && typeof module == 'object' && module && !module.nodeType && module;
+
+/** Detect the popular CommonJS extension `module.exports`. */
+var moduleExports = freeModule && freeModule.exports === freeExports;
+
+/** Built-in value references. */
+var Buffer = moduleExports ? root.Buffer : undefined;
+
+/* Built-in method references for those with the same name as other `lodash` methods. */
+var nativeIsBuffer = Buffer ? Buffer.isBuffer : undefined;
+
+/**
+ * Checks if `value` is a buffer.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.3.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a buffer, else `false`.
+ * @example
+ *
+ * _.isBuffer(new Buffer(2));
+ * // => true
+ *
+ * _.isBuffer(new Uint8Array(2));
+ * // => false
+ */
+var isBuffer = nativeIsBuffer || stubFalse;
+
+module.exports = isBuffer;
+
+},{"./_root":72,"./stubFalse":95}],83:[function(require,module,exports){
+var baseGetTag = require('./_baseGetTag'),
+    isObject = require('./isObject');
+
+/** `Object#toString` result references. */
+var asyncTag = '[object AsyncFunction]',
+    funcTag = '[object Function]',
+    genTag = '[object GeneratorFunction]',
+    proxyTag = '[object Proxy]';
+
+/**
+ * Checks if `value` is classified as a `Function` object.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a function, else `false`.
+ * @example
+ *
+ * _.isFunction(_);
+ * // => true
+ *
+ * _.isFunction(/abc/);
+ * // => false
+ */
+function isFunction(value) {
+  if (!isObject(value)) {
+    return false;
+  }
+  // The use of `Object#toString` avoids issues with the `typeof` operator
+  // in Safari 9 which returns 'object' for typed arrays and other constructors.
+  var tag = baseGetTag(value);
+  return tag == funcTag || tag == genTag || tag == asyncTag || tag == proxyTag;
+}
+
+module.exports = isFunction;
+
+},{"./_baseGetTag":30,"./isObject":87}],84:[function(require,module,exports){
+/** Used as references for various `Number` constants. */
+var MAX_SAFE_INTEGER = 9007199254740991;
+
+/**
+ * Checks if `value` is a valid array-like length.
+ *
+ * **Note:** This method is loosely based on
+ * [`ToLength`](http://ecma-international.org/ecma-262/7.0/#sec-tolength).
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a valid length, else `false`.
+ * @example
+ *
+ * _.isLength(3);
+ * // => true
+ *
+ * _.isLength(Number.MIN_VALUE);
+ * // => false
+ *
+ * _.isLength(Infinity);
+ * // => false
+ *
+ * _.isLength('3');
+ * // => false
+ */
+function isLength(value) {
+  return typeof value == 'number' &&
+    value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
+}
+
+module.exports = isLength;
+
+},{}],85:[function(require,module,exports){
+/**
+ * Checks if `value` is `null` or `undefined`.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is nullish, else `false`.
+ * @example
+ *
+ * _.isNil(null);
+ * // => true
+ *
+ * _.isNil(void 0);
+ * // => true
+ *
+ * _.isNil(NaN);
+ * // => false
+ */
+function isNil(value) {
+  return value == null;
+}
+
+module.exports = isNil;
+
+},{}],86:[function(require,module,exports){
+var baseGetTag = require('./_baseGetTag'),
+    isObjectLike = require('./isObjectLike');
+
+/** `Object#toString` result references. */
+var numberTag = '[object Number]';
+
+/**
+ * Checks if `value` is classified as a `Number` primitive or object.
+ *
+ * **Note:** To exclude `Infinity`, `-Infinity`, and `NaN`, which are
+ * classified as numbers, use the `_.isFinite` method.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a number, else `false`.
+ * @example
+ *
+ * _.isNumber(3);
+ * // => true
+ *
+ * _.isNumber(Number.MIN_VALUE);
+ * // => true
+ *
+ * _.isNumber(Infinity);
+ * // => true
+ *
+ * _.isNumber('3');
+ * // => false
+ */
+function isNumber(value) {
+  return typeof value == 'number' ||
+    (isObjectLike(value) && baseGetTag(value) == numberTag);
+}
+
+module.exports = isNumber;
+
+},{"./_baseGetTag":30,"./isObjectLike":88}],87:[function(require,module,exports){
+/**
+ * Checks if `value` is the
+ * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
+ * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an object, else `false`.
+ * @example
+ *
+ * _.isObject({});
+ * // => true
+ *
+ * _.isObject([1, 2, 3]);
+ * // => true
+ *
+ * _.isObject(_.noop);
+ * // => true
+ *
+ * _.isObject(null);
+ * // => false
+ */
+function isObject(value) {
+  var type = typeof value;
+  return value != null && (type == 'object' || type == 'function');
+}
+
+module.exports = isObject;
+
+},{}],88:[function(require,module,exports){
+/**
+ * Checks if `value` is object-like. A value is object-like if it's not `null`
+ * and has a `typeof` result of "object".
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
+ * @example
+ *
+ * _.isObjectLike({});
+ * // => true
+ *
+ * _.isObjectLike([1, 2, 3]);
+ * // => true
+ *
+ * _.isObjectLike(_.noop);
+ * // => false
+ *
+ * _.isObjectLike(null);
+ * // => false
+ */
+function isObjectLike(value) {
+  return value != null && typeof value == 'object';
+}
+
+module.exports = isObjectLike;
+
+},{}],89:[function(require,module,exports){
+var baseGetTag = require('./_baseGetTag'),
+    getPrototype = require('./_getPrototype'),
+    isObjectLike = require('./isObjectLike');
+
+/** `Object#toString` result references. */
+var objectTag = '[object Object]';
+
+/** Used for built-in method references. */
+var funcProto = Function.prototype,
+    objectProto = Object.prototype;
+
+/** Used to resolve the decompiled source of functions. */
+var funcToString = funcProto.toString;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/** Used to infer the `Object` constructor. */
+var objectCtorString = funcToString.call(Object);
+
+/**
+ * Checks if `value` is a plain object, that is, an object created by the
+ * `Object` constructor or one with a `[[Prototype]]` of `null`.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.8.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a plain object, else `false`.
+ * @example
+ *
+ * function Foo() {
+ *   this.a = 1;
+ * }
+ *
+ * _.isPlainObject(new Foo);
+ * // => false
+ *
+ * _.isPlainObject([1, 2, 3]);
+ * // => false
+ *
+ * _.isPlainObject({ 'x': 0, 'y': 0 });
+ * // => true
+ *
+ * _.isPlainObject(Object.create(null));
+ * // => true
+ */
+function isPlainObject(value) {
+  if (!isObjectLike(value) || baseGetTag(value) != objectTag) {
+    return false;
+  }
+  var proto = getPrototype(value);
+  if (proto === null) {
+    return true;
+  }
+  var Ctor = hasOwnProperty.call(proto, 'constructor') && proto.constructor;
+  return typeof Ctor == 'function' && Ctor instanceof Ctor &&
+    funcToString.call(Ctor) == objectCtorString;
+}
+
+module.exports = isPlainObject;
+
+},{"./_baseGetTag":30,"./_getPrototype":43,"./isObjectLike":88}],90:[function(require,module,exports){
+var baseGetTag = require('./_baseGetTag'),
+    isArray = require('./isArray'),
+    isObjectLike = require('./isObjectLike');
+
+/** `Object#toString` result references. */
+var stringTag = '[object String]';
+
+/**
+ * Checks if `value` is classified as a `String` primitive or object.
+ *
+ * @static
+ * @since 0.1.0
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a string, else `false`.
+ * @example
+ *
+ * _.isString('abc');
+ * // => true
+ *
+ * _.isString(1);
+ * // => false
+ */
+function isString(value) {
+  return typeof value == 'string' ||
+    (!isArray(value) && isObjectLike(value) && baseGetTag(value) == stringTag);
+}
+
+module.exports = isString;
+
+},{"./_baseGetTag":30,"./isArray":79,"./isObjectLike":88}],91:[function(require,module,exports){
+var baseGetTag = require('./_baseGetTag'),
+    isObjectLike = require('./isObjectLike');
+
+/** `Object#toString` result references. */
+var symbolTag = '[object Symbol]';
+
+/**
+ * Checks if `value` is classified as a `Symbol` primitive or object.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
+ * @example
+ *
+ * _.isSymbol(Symbol.iterator);
+ * // => true
+ *
+ * _.isSymbol('abc');
+ * // => false
+ */
+function isSymbol(value) {
+  return typeof value == 'symbol' ||
+    (isObjectLike(value) && baseGetTag(value) == symbolTag);
+}
+
+module.exports = isSymbol;
+
+},{"./_baseGetTag":30,"./isObjectLike":88}],92:[function(require,module,exports){
+var baseIsTypedArray = require('./_baseIsTypedArray'),
+    baseUnary = require('./_baseUnary'),
+    nodeUtil = require('./_nodeUtil');
+
+/* Node.js helper references. */
+var nodeIsTypedArray = nodeUtil && nodeUtil.isTypedArray;
+
+/**
+ * Checks if `value` is classified as a typed array.
+ *
+ * @static
+ * @memberOf _
+ * @since 3.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a typed array, else `false`.
+ * @example
+ *
+ * _.isTypedArray(new Uint8Array);
+ * // => true
+ *
+ * _.isTypedArray([]);
+ * // => false
+ */
+var isTypedArray = nodeIsTypedArray ? baseUnary(nodeIsTypedArray) : baseIsTypedArray;
+
+module.exports = isTypedArray;
+
+},{"./_baseIsTypedArray":33,"./_baseUnary":37,"./_nodeUtil":69}],93:[function(require,module,exports){
+var arrayLikeKeys = require('./_arrayLikeKeys'),
+    baseKeys = require('./_baseKeys'),
+    isArrayLike = require('./isArrayLike');
+
+/**
+ * Creates an array of the own enumerable property names of `object`.
+ *
+ * **Note:** Non-object values are coerced to objects. See the
+ * [ES spec](http://ecma-international.org/ecma-262/7.0/#sec-object.keys)
+ * for more details.
+ *
+ * @static
+ * @since 0.1.0
+ * @memberOf _
+ * @category Object
+ * @param {Object} object The object to query.
+ * @returns {Array} Returns the array of property names.
+ * @example
+ *
+ * function Foo() {
+ *   this.a = 1;
+ *   this.b = 2;
+ * }
+ *
+ * Foo.prototype.c = 3;
+ *
+ * _.keys(new Foo);
+ * // => ['a', 'b'] (iteration order is not guaranteed)
+ *
+ * _.keys('hi');
+ * // => ['0', '1']
+ */
+function keys(object) {
+  return isArrayLike(object) ? arrayLikeKeys(object) : baseKeys(object);
+}
+
+module.exports = keys;
+
+},{"./_arrayLikeKeys":26,"./_baseKeys":34,"./isArrayLike":80}],94:[function(require,module,exports){
+var MapCache = require('./_MapCache');
+
+/** Error message constants. */
+var FUNC_ERROR_TEXT = 'Expected a function';
+
+/**
+ * Creates a function that memoizes the result of `func`. If `resolver` is
+ * provided, it determines the cache key for storing the result based on the
+ * arguments provided to the memoized function. By default, the first argument
+ * provided to the memoized function is used as the map cache key. The `func`
+ * is invoked with the `this` binding of the memoized function.
+ *
+ * **Note:** The cache is exposed as the `cache` property on the memoized
+ * function. Its creation may be customized by replacing the `_.memoize.Cache`
+ * constructor with one whose instances implement the
+ * [`Map`](http://ecma-international.org/ecma-262/7.0/#sec-properties-of-the-map-prototype-object)
+ * method interface of `clear`, `delete`, `get`, `has`, and `set`.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Function
+ * @param {Function} func The function to have its output memoized.
+ * @param {Function} [resolver] The function to resolve the cache key.
+ * @returns {Function} Returns the new memoized function.
+ * @example
+ *
+ * var object = { 'a': 1, 'b': 2 };
+ * var other = { 'c': 3, 'd': 4 };
+ *
+ * var values = _.memoize(_.values);
+ * values(object);
+ * // => [1, 2]
+ *
+ * values(other);
+ * // => [3, 4]
+ *
+ * object.a = 2;
+ * values(object);
+ * // => [1, 2]
+ *
+ * // Modify the result cache.
+ * values.cache.set(object, ['a', 'b']);
+ * values(object);
+ * // => ['a', 'b']
+ *
+ * // Replace `_.memoize.Cache`.
+ * _.memoize.Cache = WeakMap;
+ */
+function memoize(func, resolver) {
+  if (typeof func != 'function' || (resolver != null && typeof resolver != 'function')) {
+    throw new TypeError(FUNC_ERROR_TEXT);
+  }
+  var memoized = function() {
+    var args = arguments,
+        key = resolver ? resolver.apply(this, args) : args[0],
+        cache = memoized.cache;
+
+    if (cache.has(key)) {
+      return cache.get(key);
+    }
+    var result = func.apply(this, args);
+    memoized.cache = cache.set(key, result) || cache;
+    return result;
+  };
+  memoized.cache = new (memoize.Cache || MapCache);
+  return memoized;
+}
+
+// Expose `MapCache`.
+memoize.Cache = MapCache;
+
+module.exports = memoize;
+
+},{"./_MapCache":24}],95:[function(require,module,exports){
+/**
+ * This method returns `false`.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.13.0
+ * @category Util
+ * @returns {boolean} Returns `false`.
+ * @example
+ *
+ * _.times(2, _.stubFalse);
+ * // => [false, false]
+ */
+function stubFalse() {
+  return false;
+}
+
+module.exports = stubFalse;
+
+},{}],96:[function(require,module,exports){
+var baseToString = require('./_baseToString');
+
+/**
+ * Converts `value` to a string. An empty string is returned for `null`
+ * and `undefined` values. The sign of `-0` is preserved.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to convert.
+ * @returns {string} Returns the converted string.
+ * @example
+ *
+ * _.toString(null);
+ * // => ''
+ *
+ * _.toString(-0);
+ * // => '-0'
+ *
+ * _.toString([1, 2, 3]);
+ * // => '1,2,3'
+ */
+function toString(value) {
+  return value == null ? '' : baseToString(value);
+}
+
+module.exports = toString;
+
+},{"./_baseToString":36}],"airtable":[function(require,module,exports){
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var base_1 = __importDefault(require("./base"));
+var record_1 = __importDefault(require("./record"));
+var table_1 = __importDefault(require("./table"));
+var airtable_error_1 = __importDefault(require("./airtable_error"));
+var Airtable = /** @class */ (function () {
+    function Airtable(opts) {
+        if (opts === void 0) { opts = {}; }
+        var defaultConfig = Airtable.default_config();
+        var apiVersion = opts.apiVersion || Airtable.apiVersion || defaultConfig.apiVersion;
+        Object.defineProperties(this, {
+            _apiKey: {
+                value: opts.apiKey || Airtable.apiKey || defaultConfig.apiKey,
+            },
+            _apiVersion: {
+                value: apiVersion,
+            },
+            _apiVersionMajor: {
+                value: apiVersion.split('.')[0],
+            },
+            _customHeaders: {
+                value: opts.customHeaders || {},
+            },
+            _endpointUrl: {
+                value: opts.endpointUrl || Airtable.endpointUrl || defaultConfig.endpointUrl,
+            },
+            _noRetryIfRateLimited: {
+                value: opts.noRetryIfRateLimited ||
+                    Airtable.noRetryIfRateLimited ||
+                    defaultConfig.noRetryIfRateLimited,
+            },
+            _requestTimeout: {
+                value: opts.requestTimeout || Airtable.requestTimeout || defaultConfig.requestTimeout,
+            },
+        });
+        if (!this._apiKey) {
+            throw new Error('An API key is required to connect to Airtable');
+        }
+    }
+    Airtable.prototype.base = function (baseId) {
+        return base_1.default.createFunctor(this, baseId);
+    };
+    Airtable.default_config = function () {
+        return {
+            endpointUrl:  false || 'https://api.airtable.com',
+            apiVersion: '0.1.0',
+            apiKey: "",
+            noRetryIfRateLimited: false,
+            requestTimeout: 300 * 1000,
+        };
+    };
+    Airtable.configure = function (_a) {
+        var apiKey = _a.apiKey, endpointUrl = _a.endpointUrl, apiVersion = _a.apiVersion, noRetryIfRateLimited = _a.noRetryIfRateLimited, requestTimeout = _a.requestTimeout;
+        Airtable.apiKey = apiKey;
+        Airtable.endpointUrl = endpointUrl;
+        Airtable.apiVersion = apiVersion;
+        Airtable.noRetryIfRateLimited = noRetryIfRateLimited;
+        Airtable.requestTimeout = requestTimeout;
+    };
+    Airtable.base = function (baseId) {
+        return new Airtable().base(baseId);
+    };
+    Airtable.Base = base_1.default;
+    Airtable.Record = record_1.default;
+    Airtable.Table = table_1.default;
+    Airtable.Error = airtable_error_1.default;
+    return Airtable;
+}());
+module.exports = Airtable;
+
+},{"./airtable_error":2,"./base":3,"./record":15,"./table":17}]},{},["airtable"])("airtable")
+});
+
+
+/***/ }),
+
+/***/ "./src/bg/api.js":
+/*!***********************!*\
+  !*** ./src/bg/api.js ***!
+  \***********************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   getAllRows: () => (/* binding */ getAllRows),
+/* harmony export */   getBases: () => (/* binding */ getBases),
+/* harmony export */   getRow: () => (/* binding */ getRow)
+/* harmony export */ });
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utils */ "./src/bg/utils.js");
+
+
+async function getAllRows(base) {
+  let allRecords = [];
+  await new Promise((resolve, reject) => {
+    const requestedLastDate = new Date();
+    requestedLastDate.setDate(requestedLastDate.getDate() - 500);
+
+    base('Orders').select({
+      view: "Grid view",
+      fields: ['Order Updated Post Kitchen Notification'],
+      maxRecords: 200
+    }).eachPage((records, fetchNextPage) => {
+      allRecords = allRecords.concat(records);
+      fetchNextPage();
+    }, (err) => {
+      if (err) {
+        (0,_utils__WEBPACK_IMPORTED_MODULE_0__.storeError)(err);
+        reject(err);
+      } else {
+        resolve();
+      }
+    });
+  });
+  const filteredRecords = (0,_utils__WEBPACK_IMPORTED_MODULE_0__.filterRecords)(allRecords);
+  return filteredRecords;
+}
+
+async function getRow(base, id){
+  return new Promise((resolve, reject) => {
+    base('Orders').find(id, (err, record) => {
+      if (err) {
+        (0,_utils__WEBPACK_IMPORTED_MODULE_0__.storeError)(err);
+        reject(err);
+      } else {
+        resolve(record);
+      }
+    });
+  });
+}
+
+async function getBases(accessToken) {
+  try {
+    const response = await fetch('https://api.airtable.com/v0/meta/bases', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (data.error) {
+      (0,_utils__WEBPACK_IMPORTED_MODULE_0__.storeError)("Error fetching bases:", data.error);
+    } else {
+      console.log("Bases:", data.bases);
+      // Store the bases data along with the token data
+      chrome.storage.local.get("airtableTokenData", (result) => {
+        const updatedData = {
+          ...result.airtableTokenData,
+          bases: data.bases
+        };
+        chrome.storage.local.set({ airtableTokenData: updatedData }, () => {
+          console.log("Bases data stored successfully");
+        });
+      });
+    }
+  } catch (error) {
+    (0,_utils__WEBPACK_IMPORTED_MODULE_0__.storeError)("Failed to fetch bases:", error);
+  }
+}
+
+/***/ }),
+
+/***/ "./src/bg/functions.js":
+/*!*****************************!*\
+  !*** ./src/bg/functions.js ***!
+  \*****************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   checkForChangesAndMakeSound: () => (/* binding */ checkForChangesAndMakeSound)
+/* harmony export */ });
+/* harmony import */ var airtable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! airtable */ "./node_modules/airtable/lib/airtable.umd.js");
+/* harmony import */ var airtable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(airtable__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./utils */ "./src/bg/utils.js");
+/* harmony import */ var _api__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./api */ "./src/bg/api.js");
+
+
+
+
+function checkForChangesAndMakeSound(tokenData) {
+    var base = new (airtable__WEBPACK_IMPORTED_MODULE_0___default())({ apiKey: tokenData.access_token }).base(tokenData.bases[0].id);
+    (0,_api__WEBPACK_IMPORTED_MODULE_2__.getAllRows)(base).then(allRecords => {
+        const recordsById = allRecords.reduce((acc, record) => {
+            acc[record.id] = { ...record.fields, id: record.id };
+            return acc;
+        }, {});
+        chrome.storage.local.get('recordsById', (result) => {
+            const oldRecordsById = result.recordsById || {};
+            const newRecords = Object.keys(recordsById).filter(id => !oldRecordsById[id]);
+            // console.log(
+            //     'oldRecordsById: ' + Object.keys(oldRecordsById).length, oldRecordsById,
+            //     'recordsById: ' + Object.keys(recordsById).length, recordsById,
+            //     'newRecords: ' + Object.keys(newRecords).length, newRecords);
+            if (newRecords.length > 0 && Object.keys(oldRecordsById).length > 0) {
+                console.log('New records added:', newRecords);
+                (0,_utils__WEBPACK_IMPORTED_MODULE_1__.playSound)();
+                (0,_api__WEBPACK_IMPORTED_MODULE_2__.getRow)(base, newRecords[0]).then(record => {
+                    let data = { ...record.fields, dateAdded: new Date().toISOString() };
+                    chrome.storage.local.get('lastCapturedRecords', (result) => {
+                        const lastCapturedRecords = result.lastCapturedRecords || [];
+                        lastCapturedRecords.push(data);
+                        chrome.storage.local.set({ lastCapturedRecords: lastCapturedRecords }, () => {
+                            console.log('All records stored locally by Order ID', lastCapturedRecords);
+                        });
+                    });
+                });
+            }
+            
+            chrome.storage.local.set({ recordsById: recordsById }, () => {
+                console.log('All records stored locally by Order ID');
+            });
+        });
+    }).catch(err => {
+        (0,_utils__WEBPACK_IMPORTED_MODULE_1__.storeError)('Error retrieving records: ' + err);
+    });
+}
+
+/***/ }),
+
+/***/ "./src/bg/oauth.js":
+/*!*************************!*\
+  !*** ./src/bg/oauth.js ***!
+  \*************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   authenticateWithAirtable: () => (/* binding */ authenticateWithAirtable),
+/* harmony export */   exchangeCodeForToken: () => (/* binding */ exchangeCodeForToken),
+/* harmony export */   isTokenDataOk: () => (/* binding */ isTokenDataOk),
+/* harmony export */   refreshAccessToken: () => (/* binding */ refreshAccessToken)
+/* harmony export */ });
+/* harmony import */ var airtable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! airtable */ "./node_modules/airtable/lib/airtable.umd.js");
+/* harmony import */ var airtable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(airtable__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./utils */ "./src/bg/utils.js");
+/* harmony import */ var _api__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./api */ "./src/bg/api.js");
+
+
+
+
+// Constants
+const CLIENT_ID = "b91a2cb4-bf74-4614-bf84-35ea2337b69d";
+const REDIRECT_URI = chrome.identity.getRedirectURL("oauth");
+const AUTH_BASE_URL = "https://airtable.com/oauth2/v1/authorize";
+const TOKEN_URL = "https://airtable.com/oauth2/v1/token";
+const TOKEN_REFRESH_URL = 'https://airtable.com/oauth2/v1/token';
+// OAuth Flow
+async function authenticateWithAirtable() {
+  try {
+    const state = (0,_utils__WEBPACK_IMPORTED_MODULE_1__.generateRandomString)();
+    const codeVerifier = (0,_utils__WEBPACK_IMPORTED_MODULE_1__.generateRandomString)();
+    const codeChallenge = await (0,_utils__WEBPACK_IMPORTED_MODULE_1__.generateCodeChallenge)(codeVerifier);
+    const scopes = ["data.records:read", "user.email:read", "schema.bases:read", "webhook:manage"].join(" ");
+
+    const authUrl = `${AUTH_BASE_URL}?` +
+      `client_id=${CLIENT_ID}&` +
+      `redirect_uri=${encodeURIComponent(REDIRECT_URI)}&` +
+      `response_type=code&` +
+      `scope=${encodeURIComponent(scopes)}&` +
+      `state=${state}&` +
+      `code_challenge=${codeChallenge}&` +
+      `code_challenge_method=S256`;
+
+    console.log("Auth URL:", authUrl);
+
+    chrome.identity.launchWebAuthFlow({ url: authUrl, interactive: true }, async (redirectedUrl) => {
+      if (chrome.runtime.lastError) {
+        (0,_utils__WEBPACK_IMPORTED_MODULE_1__.storeError)("OAuth Error:", chrome.runtime.lastError.message);
+        return;
+      }
+
+      const urlParams = new URLSearchParams(new URL(redirectedUrl).search);
+      const authCode = urlParams.get("code");
+      const returnedState = urlParams.get("state");
+
+      if (returnedState !== state) {
+        (0,_utils__WEBPACK_IMPORTED_MODULE_1__.storeError)("State mismatch. Possible CSRF attack!");
+        return;
+      }
+
+      console.log("Authorization Code:", authCode);
+      await exchangeCodeForToken(authCode, codeVerifier);
+    });
+  } catch (error) {
+    (0,_utils__WEBPACK_IMPORTED_MODULE_1__.storeError)("Authentication Error:", error);
+  }
+}
+
+async function exchangeCodeForToken(authCode, codeVerifier) {
+  try {
+    const response = await fetch(TOKEN_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: CLIENT_ID,
+        code: authCode,
+        redirect_uri: REDIRECT_URI,
+        grant_type: "authorization_code",
+        code_verifier: codeVerifier,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.error) {
+      (0,_utils__WEBPACK_IMPORTED_MODULE_1__.storeError)("Token Exchange Error:", data.error);
+    } else {
+      console.log(data);
+      console.log("Access Token:", data.access_token);
+      storeToken(data);
+    }
+  } catch (error) {
+    (0,_utils__WEBPACK_IMPORTED_MODULE_1__.storeError)("Token Exchange Failed:", error);
+  }
+}
+
+function storeToken(data, refreshed = false) {
+  chrome.storage.local.get('airtableTokenData', (result) => {
+    const lastsavedData = result.airtableTokenData || {};
+    var _tokenData = {
+      ...lastsavedData,
+      ...data,
+      refreshedAt: new Date().toISOString(),
+    };
+    if (!refreshed) {
+      _tokenData.retrievedAt = new Date().toISOString();
+    }
+    chrome.storage.local.set({ airtableTokenData: _tokenData }, () => {
+      console.log("Token data stored successfully");
+      (0,_api__WEBPACK_IMPORTED_MODULE_2__.getBases)(data.access_token);
+    });
+  });
+}
+
+function refreshAccessToken(refreshToken) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await fetch(TOKEN_REFRESH_URL, {
+        method: 'POST',
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          grant_type: 'refresh_token',
+          client_id: CLIENT_ID,
+          refresh_token: refreshToken
+        })
+      });
+      const data = await response.json();
+      if (data.error) {
+        (0,_utils__WEBPACK_IMPORTED_MODULE_1__.storeError)("Token Refresh Error:", data.error);
+        reject(data.error);
+      } else {
+        console.log("New Access Token:", data.access_token);
+        storeToken(data, true);
+        resolve(data);
+      }
+    } catch (error) {
+      (0,_utils__WEBPACK_IMPORTED_MODULE_1__.storeError)("Token Refresh Failed:", error);
+      reject(error);
+    }
+  });
+}
+
+
+
+function isTokenDataOk(tokenData) {
+  const now = new Date();
+  const refreshExpiresIn = (tokenData.refresh_expires_in && tokenData.retrievedAt) ? new Date(new Date(tokenData.retrievedAt).getTime() + tokenData.refresh_expires_in * 1000) : null;
+  const expiresIn = (tokenData.expires_in && tokenData.refreshedAt) ? new Date(new Date(tokenData.refreshedAt).getTime() + tokenData.expires_in * 1000) : null;
+  console.log(now, expiresIn, refreshExpiresIn)
+  if (!refreshExpiresIn || now >= refreshExpiresIn) {
+    // console.log("Refresh token expired, re-authenticating...");
+    chrome.storage.local.remove('airtableTokenData', () => {
+      console.log("Token data removed successfully");
+    });
+    (0,_utils__WEBPACK_IMPORTED_MODULE_1__.storeError)("Token is expired");
+    // chrome.storage.local.remove('error')
+    // authenticateWithAirtable();
+    return false;
+  } else if (!expiresIn || now >= expiresIn) {
+    console.log("Access token expired, renewing token...");
+    refreshAccessToken(tokenData.refresh_token).catch(() => {
+      // authenticateWithAirtable();
+    });
+    return false;
+  }
+  return true;
+}
+
+/***/ }),
+
+/***/ "./src/bg/utils.js":
+/*!*************************!*\
+  !*** ./src/bg/utils.js ***!
+  \*************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   filterRecords: () => (/* binding */ filterRecords),
+/* harmony export */   generateCodeChallenge: () => (/* binding */ generateCodeChallenge),
+/* harmony export */   generateRandomString: () => (/* binding */ generateRandomString),
+/* harmony export */   playSound: () => (/* binding */ playSound),
+/* harmony export */   storeError: () => (/* binding */ storeError)
+/* harmony export */ });
+// Utility Functions
+function generateRandomString(length = 64) {
+    const array = new Uint8Array(length);
+    crypto.getRandomValues(array);
+    return Array.from(array)
+        .map((b) => String.fromCharCode(b))
+        .map((char) => char.charCodeAt(0).toString(36))
+        .join("")
+        .substring(0, length);
+}
+
+async function generateCodeChallenge(verifier) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(verifier);
+    const digest = await crypto.subtle.digest("SHA-256", data);
+    return btoa(String.fromCharCode(...new Uint8Array(digest)))
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/, "");
+}
+
+function storeError(error, erro1) {
+    console.error(error, erro1);
+    chrome.storage.local.set({ error: error + erro1.toString() });
+}
+async function playSound() {
+    const offscreenUrl = chrome.runtime.getURL('audio.html');
+    const offscreenDoc = await chrome.offscreen.hasDocument();
+    if (offscreenDoc) {
+        await chrome.offscreen.closeDocument();
+    }
+    await chrome.offscreen.createDocument({
+        url: offscreenUrl,
+        reasons: ['AUDIO_PLAYBACK'],
+        justification: 'notification',
+    });
+}
+
+
+function filterRecords(allRecords) {
+    return allRecords.filter(record => !!record.get('Order Updated Post Kitchen Notification'));
+}
+
+
+/***/ })
+
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/************************************************************************/
+/******/ 	/* webpack/runtime/compat get default export */
+/******/ 	(() => {
+/******/ 		// getDefaultExport function for compatibility with non-harmony modules
+/******/ 		__webpack_require__.n = (module) => {
+/******/ 			var getter = module && module.__esModule ?
+/******/ 				() => (module['default']) :
+/******/ 				() => (module);
+/******/ 			__webpack_require__.d(getter, { a: getter });
+/******/ 			return getter;
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__webpack_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/global */
+/******/ 	(() => {
+/******/ 		__webpack_require__.g = (function() {
+/******/ 			if (typeof globalThis === 'object') return globalThis;
+/******/ 			try {
+/******/ 				return this || new Function('return this')();
+/******/ 			} catch (e) {
+/******/ 				if (typeof window === 'object') return window;
+/******/ 			}
+/******/ 		})();
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/************************************************************************/
+var __webpack_exports__ = {};
+// This entry needs to be wrapped in an IIFE because it needs to be in strict mode.
+(() => {
+"use strict";
+/*!***************************!*\
+  !*** ./src/background.js ***!
+  \***************************/
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _bg_oauth__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./bg/oauth */ "./src/bg/oauth.js");
+/* harmony import */ var _bg_utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./bg/utils */ "./src/bg/utils.js");
+/* harmony import */ var _bg_functions__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./bg/functions */ "./src/bg/functions.js");
+
+
+
+
+
+
+
+function main() {
+  chrome.storage.local.get("airtableTokenData", (result) => {
+    if (result.airtableTokenData) {
+      const tokenData = result.airtableTokenData;
+      var tokenIsOk = (0,_bg_oauth__WEBPACK_IMPORTED_MODULE_0__.isTokenDataOk)(tokenData);
+      if (!tokenIsOk) return;
+      if (tokenData.bases.length === 0) {
+        (0,_bg_utils__WEBPACK_IMPORTED_MODULE_1__.storeError)("No bases found.");
+      } else {
+        (0,_bg_functions__WEBPACK_IMPORTED_MODULE_2__.checkForChangesAndMakeSound)(tokenData);
+      }
+    }
+  });
+}
+
+
+
+chrome.alarms.create("checkAirtableChanges", { periodInMinutes: 0.1 });
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === "checkAirtableChanges") {
+    main();
+  }
+});
+
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'authenticate') {
+    (0,_bg_oauth__WEBPACK_IMPORTED_MODULE_0__.authenticateWithAirtable)()
+      .then(() => sendResponse({ success: true }))
+      .catch(error => sendResponse({ error: error.message }));
+  } else if (request.action === 'getBasesList') {
+    chrome.storage.local.get("airtableTokenData", (result) => {
+      if (result.airtableTokenData) {
+        sendResponse(result.airtableTokenData);
+      }
+    });
+  }
+  return true; // Will respond asynchronously.
+});
+})();
+
+/******/ })()
+;
+//# sourceMappingURL=background.js.map

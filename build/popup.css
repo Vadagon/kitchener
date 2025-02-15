@@ -1,3 +1,6 @@
+/*!*****************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js!./src/popup.css ***!
+  \*****************************************************************/
 /* normalize css starts here */
 *,
 *::before,
@@ -187,3 +190,5 @@ code {
   margin-top: 90px;
   color: #888;
 }
+
+/*# sourceMappingURL=popup.css.map*/
